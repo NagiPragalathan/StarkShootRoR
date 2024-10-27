@@ -1,0 +1,509 @@
+import React, { useState, useEffect, useRef } from "react";
+import { Billboard, Text } from "@react-three/drei";
+import { useFrame, useThree } from "@react-three/fiber";
+import { CapsuleCollider, RigidBody, vec3 } from "@react-three/rapier";
+import { myPlayer } from "playroomkit";
+import { CharacterSoldier } from "./CharacterSoldier";
+import * as THREE from "three";
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
+
+const MOVEMENT_SPEED = 202;
+const FIRE_RATE = 380;
+const JUMP_FORCE = 20;
+
+export const WEAPON_OFFSET = {
+  x: -0.2,
+  y: 1.4,
+  z: 0.8,
+};
+
+const WEAPONS = [
+  "GrenadeLauncher",
+  "AK",
+  "Knife_1",
+  "Knife_2",
+  "Pistol",
+  "Revolver",
+  "Revolver_Small",
+  "RocketLauncher",
+  "ShortCannon",
+  "SMG",
+  "Shotgun",
+  "Shovel",
+  "Sniper",
+  "Sniper_2",
+];
+
+const BULLET_PROPERTIES = {
+  "GrenadeLauncher": { damage: 35, speed: 1.2, size: 0.5, range: 150, spread: 0.05, bullets: 8 },
+  "AK": { damage: 10, speed: 1.5, size: 0.2, range: 100, spread: 0.01, bullets: 1 },
+  "Knife_1": { damage: 25, speed: 1, size: 0.3, range: 5, spread: 0, bullets: 0 },
+  "Knife_2": { damage: 30, speed: 1, size: 0.3, range: 5, spread: 0, bullets: 0 },
+  "Pistol": { damage: 15, speed: 1.5, size: 0.2, range: 80, spread: 0.02, bullets: 1 },
+  "Revolver": { damage: 20, speed: 1.4, size: 0.25, range: 90, spread: 0.01, bullets: 1 },
+  "Revolver_Small": { damage: 18, speed: 1.4, size: 0.2, range: 80, spread: 0.02, bullets: 1 },
+  "RocketLauncher": { damage: 50, speed: 1, size: 0.6, range: 200, spread: 0.05, bullets: 5 },
+  "ShortCannon": { damage: 40, speed: 1, size: 0.5, range: 120, spread: 0.05, bullets: 1 },
+  "SMG": { damage: 8, speed: 1.6, size: 0.15, range: 90, spread: 0.02, bullets: 1 },
+  "Shotgun": { damage: 6, speed: 1.2, size: 0.2, range: 30, spread: 0.2, bullets: 3 },
+  "Shovel": { damage: 20, speed: 1, size: 0.35, range: 3, spread: 0, bullets: 0 },
+  "Sniper": { damage: 25, speed: 2, size: 0.4, range: 300, spread: 0, bullets: 1 },
+  "Sniper_2": { damage: 30, speed: 2, size: 0.4, range: 300, spread: 0, bullets: 1 },
+};
+
+export const CharacterController = ({
+  state,
+  joystick,
+  userPlayer,
+  onKilled,
+  onFire,
+  downgradedPerformance,
+  ...props
+}) => {
+  const [weapon, setWeapon] = useState("AK");
+  const [weaponIndex, setWeaponIndex] = useState(1);
+  const group = useRef();
+  const character = useRef();
+  const rigidbody = useRef();
+  const orbitControl = useRef();
+  let switchTimeout;
+  const [animation, setAnimation] = useState("Idle");
+  const lastShoot = useRef(0);
+  const [movement, setMovement] = useState({
+    forward: false,
+    backward: false,
+    left: false,
+    right: false,
+    fire: false,
+    jump: false,
+  });
+  const { camera, scene, gl } = useThree();
+  const directionalLight = useRef();
+  let isJumping = false;
+  let jumpStartTime = 0;
+  const jumpVelocity = new THREE.Vector3(0, 0, 0);
+
+  useEffect(() => {
+    if (userPlayer) {
+      orbitControl.current = new OrbitControls(camera, gl.domElement);
+      orbitControl.current.enablePan = false;
+      orbitControl.current.enableZoom = false;
+    }
+  }, [camera, gl, userPlayer]);
+
+  const spawnRandomly = () => {
+    const spawns = [];
+    for (let i = 0; i < 1000; i++) {
+      const spawn = scene.getObjectByName(`spawn_${i}`);
+      if (spawn) {
+        spawns.push(spawn);
+      } else {
+        break;
+      }
+    }
+    const spawnPos = spawns[Math.floor(Math.random() * spawns.length)].position;
+    rigidbody.current.setTranslation(spawnPos);
+  };
+
+  useEffect(() => {
+    if (userPlayer) {
+      spawnRandomly();
+    }
+  }, [userPlayer]);
+
+  useEffect(() => {
+    if (state.state.dead) {
+      const audio = new Audio("/audios/dead.mp3");
+      audio.volume = 0.5;
+      audio.play();
+    }
+  }, [state.state.dead]);
+
+  useEffect(() => {
+    if (state.state.health < 100) {
+      const audio = new Audio("/audios/hurt.mp3");
+      audio.volume = 0.4;
+      audio.play();
+    }
+  }, [state.state.health]);
+
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      if (event.repeat) return;
+      switch (event.code) {
+        case "KeyW":
+        case "ArrowUp":
+          setMovement((prev) => ({ ...prev, forward: true }));
+          break;
+        case "KeyS":
+        case "ArrowDown":
+          setMovement((prev) => ({ ...prev, backward: true }));
+          break;
+        case "KeyA":
+        case "ArrowLeft":
+          setMovement((prev) => ({ ...prev, left: true }));
+          break;
+        case "KeyD":
+        case "ArrowRight":
+          setMovement((prev) => ({ ...prev, right: true }));
+          break;
+        case "KeyF":
+          setMovement((prev) => ({ ...prev, fire: true }));
+          break;
+        case "Space":
+          setMovement((prev) => ({ ...prev, jump: true }));
+          break;
+        case "KeyQ":
+          console.log("press q working...!");
+          setWeaponIndex((prev) => (prev + 1) % WEAPONS.length);
+          break;
+        default:
+          break;
+      }
+    };
+
+    const handleKeyUp = (event) => {
+      switch (event.code) {
+        case "KeyW":
+        case "ArrowUp":
+          setMovement((prev) => ({ ...prev, forward: false }));
+          break;
+        case "KeyS":
+        case "ArrowDown":
+          setMovement((prev) => ({ ...prev, backward: false }));
+          break;
+        case "KeyA":
+        case "ArrowLeft":
+          setMovement((prev) => ({ ...prev, left: false }));
+          break;
+        case "KeyD":
+        case "ArrowRight":
+          setMovement((prev) => ({ ...prev, right: false }));
+          break;
+        case "KeyF":
+          setMovement((prev) => ({ ...prev, fire: false }));
+          break;
+        case "Space":
+          setMovement((prev) => ({ ...prev, jump: false }));
+          break;
+        default:
+          break;
+      }
+    };
+
+    if (userPlayer) {
+      window.addEventListener("keydown", handleKeyDown);
+      window.addEventListener("keyup", handleKeyUp);
+    }
+
+    return () => {
+      if (userPlayer) {
+        window.removeEventListener("keydown", handleKeyDown);
+        window.removeEventListener("keyup", handleKeyUp);
+      }
+    };
+  }, [userPlayer]);
+
+  useEffect(() => {
+    setWeapon(WEAPONS[weaponIndex]);
+  }, [weaponIndex]);
+
+  useFrame((_, delta) => {
+    // Update character and camera
+    if (character.current && orbitControl.current) {
+      orbitControl.current.update();
+
+      const directionPressed = Object.values(movement).some(v => v === true);
+
+      if (movement.jump) {
+        startJump();
+      }
+
+      if (isJumping) {
+        updateJump(delta);
+      } else if (directionPressed) {
+        moveCharacter(delta);
+      } else {
+        if (animation !== 'Idle') {
+          playAnimation('Idle');
+        }
+      }
+
+      // Ensure character does not sink below the ground
+      if (character.current.position.y < 0) {
+        character.current.position.y = 0;
+      }
+
+      updateCameraTarget();
+    }
+
+    // Sync animation state across the network
+    if (userPlayer) {
+      state.setState("pos", rigidbody.current.translation());
+      state.setState("rotY", character.current.rotation.y);
+      state.setState("animation", animation);
+      state.setState("weapon", weapon);  // Sync the weapon state
+    } else {
+      const pos = state.getState("pos");
+      const rotY = state.getState("rotY");
+      const networkAnimation = state.getState("animation");
+      const networkWeapon = state.getState("weapon");  // Get the weapon state
+
+      if (pos) {
+        rigidbody.current.setTranslation(pos);
+      }
+      if (rotY !== undefined) {
+        character.current.rotation.y = rotY;
+      }
+      if (networkAnimation !== undefined) {
+        setAnimation(networkAnimation);
+      }
+      if (networkWeapon !== undefined) {
+        setWeapon(networkWeapon);
+      }
+    }
+  });
+
+  useEffect(() => {
+    if (character.current && userPlayer) {
+      directionalLight.current.target = character.current;
+    }
+  }, [character.current]);
+
+  const startJump = () => {
+    if (!isJumping) {
+      isJumping = true;
+      jumpStartTime = performance.now();
+      jumpVelocity.y = JUMP_FORCE;
+      playAnimation('Jump');
+    }
+  };
+
+  const updateJump = (delta) => {
+    const elapsedTime = (performance.now() - jumpStartTime) / 1000;
+    const displacement = (JUMP_FORCE * elapsedTime) + (0.5 * -10 * Math.pow(elapsedTime, 2));
+    character.current.position.y += displacement;
+
+    if (character.current.position.y <= 0) {
+      character.current.position.y = 0;
+      isJumping = false;
+      const directionPressed = Object.values(movement).some(v => v === true);
+      if (directionPressed) {
+        moveCharacter(delta);
+      } else {
+        playAnimation('Idle');
+      }
+    } else {
+      moveCharacter(delta);
+    }
+  };
+
+  const moveCharacter = (delta) => {
+    // Check if shift is pressed
+    const toggleRun = false; // Assuming shift is not used in your case
+
+    // calculate towards camera direction
+    const angleYCameraDirection = Math.atan2(
+      (camera.position.x - character.current.position.x),
+      (camera.position.z - character.current.position.z)
+    );
+
+    // diagonal movement angle offset
+    const directionOffset = directionOffsetFn();
+
+    // rotate model
+    const rotateQuaternion = new THREE.Quaternion();
+    rotateQuaternion.setFromAxisAngle(new THREE.Vector3(0, 1, 0), angleYCameraDirection + directionOffset);
+    character.current.quaternion.rotateTowards(rotateQuaternion, 0.2);
+
+    // calculate direction
+    const walkDirection = new THREE.Vector3();
+    camera.getWorldDirection(walkDirection);
+    walkDirection.y = 0;
+    walkDirection.normalize();
+    walkDirection.applyAxisAngle(new THREE.Vector3(0, 1, 0), directionOffset);
+
+    // run/walk velocity
+    const velocity = toggleRun ? 5 : 2;
+
+    // move model & camera
+    const moveX = -walkDirection.x * velocity * delta;
+    const moveZ = -walkDirection.z * velocity * delta;
+
+    character.current.position.x += moveX;
+    character.current.position.z += moveZ;
+
+    updateCameraTarget();
+
+    // Update animation based on run/walk
+    if (!isJumping) {
+      const newAction = toggleRun ? 'Run' : 'Walk';
+      if (animation !== newAction) {
+        playAnimation(newAction);
+      }
+    }
+  };
+
+  const playAnimation = (actionName) => {
+    setAnimation(actionName);
+  };
+
+  const updateCameraTarget = () => {
+    if (orbitControl.current && character.current) {
+      orbitControl.current.target = new THREE.Vector3(
+        character.current.position.x,
+        character.current.position.y + 1,
+        character.current.position.z
+      );
+    }
+  };
+
+  const directionOffsetFn = () => {
+    let directionOffset = 0;
+
+    if (movement.forward) {
+      if (movement.right) {
+        directionOffset = Math.PI / 4 + Math.PI / 2;
+      } else if (movement.left) {
+        directionOffset = -Math.PI / 4 - Math.PI / 2;
+      } else {
+        directionOffset = Math.PI;
+      }
+    } else if (movement.backward) {
+      if (movement.right) {
+        directionOffset = Math.PI / 4;
+      } else if (movement.left) {
+        directionOffset = -Math.PI / 4;
+      }
+    } else if (movement.right) {
+      directionOffset = Math.PI / 2;
+    } else if (movement.left) {
+      directionOffset = -Math.PI / 2;
+    }
+
+    return directionOffset;
+  };
+
+  return (
+    <group {...props} ref={group}>
+      <RigidBody
+        ref={rigidbody}
+        colliders={false}
+        linearDamping={12}
+        lockRotations
+        type={userPlayer ? "dynamic" : "kinematicPosition"}
+        onIntersectionEnter={({ other }) => {
+          if (
+            other.rigidBody.userData.type === "bullet" &&
+            other.rigidBody.userData.player !== state.id
+          ) {
+            const newHealth =
+              state.state.health - other.rigidBody.userData.damage;
+            if (newHealth <= 0) {
+              state.setState("deaths", state.state.deaths + 1);
+              state.setState("dead", true);
+              state.setState("health", 0);
+              rigidbody.current.setEnabled(false);
+              setTimeout(() => {
+                spawnRandomly();
+                rigidbody.current.setEnabled(true);
+                state.setState("health", 100);
+                state.setState("dead", false);
+              }, 2000);
+              onKilled(state.id, other.rigidBody.userData.player);
+            } else {
+              state.setState("health", newHealth);
+            }
+          }
+        }}
+      >
+        <PlayerInfo state={state.state} />
+        <group ref={character}>
+          <CharacterSoldier
+            color={state.state.profile?.color}
+            animation={animation}
+            weapon={weapon}
+          />
+          {userPlayer && (
+            <Crosshair
+              position={[WEAPON_OFFSET.x, WEAPON_OFFSET.y, WEAPON_OFFSET.z]}
+            />
+          )}
+        </group>
+        {userPlayer && (
+          <directionalLight
+            ref={directionalLight}
+            position={[25, 18, -25]}
+            intensity={0.3}
+            castShadow={!downgradedPerformance}
+            shadow-camera-near={0}
+            shadow-camera-far={100}
+            shadow-camera-left={-20}
+            shadow-camera-right={20}
+            shadow-camera-top={20}
+            shadow-camera-bottom={-20}
+            shadow-mapSize-width={2048}
+            shadow-mapSize-height={2048}
+            shadow-bias={-0.0001}
+          />
+        )}
+        <CapsuleCollider args={[0.7, 0.6]} position={[0, 1.28, 0]} />
+      </RigidBody>
+    </group>
+  );
+};
+
+const PlayerInfo = ({ state }) => {
+  const health = state.health;
+  const name = state.profile.name;
+  return (
+    <Billboard position-y={2.5}>
+      <Text position-y={0.36} fontSize={0.4}>
+        {name}
+        <meshBasicMaterial color={state.profile.color} />
+      </Text>
+      <mesh position-z={-0.1}>
+        <planeGeometry args={[1, 0.2]} />
+        <meshBasicMaterial color="black" transparent opacity={0.5} />
+      </mesh>
+      <mesh scale-x={health / 100} position-x={-0.5 * (1 - health / 100)}>
+        <planeGeometry args={[1, 0.2]} />
+        <meshBasicMaterial color="red" />
+      </mesh>
+    </Billboard>
+  );
+};
+
+const Crosshair = (props) => {
+  return (
+    <group {...props}>
+      <mesh position-z={1}>
+        <boxGeometry args={[0.05, 0.05, 0.05]} />
+        <meshBasicMaterial color="black" transparent opacity={0.9} />
+      </mesh>
+      <mesh position-z={2}>
+        <boxGeometry args={[0.05, 0.05, 0.05]} />
+        <meshBasicMaterial color="black" transparent opacity={0.85} />
+      </mesh>
+      <mesh position-z={3}>
+        <boxGeometry args={[0.05, 0.05, 0.05]} />
+        <meshBasicMaterial color="black" transparent opacity={0.8} />
+      </mesh>
+
+      <mesh position-z={4.5}>
+        <boxGeometry args={[0.05, 0.05, 0.05]} />
+        <meshBasicMaterial color="black" opacity={0.7} transparent />
+      </mesh>
+
+      <mesh position-z={6.5}>
+        <boxGeometry args={[0.05, 0.05, 0.05]} />
+        <meshBasicMaterial color="black" opacity={0.6} transparent />
+      </mesh>
+
+      <mesh position-z={9}>
+        <boxGeometry args={[0.05, 0.05, 0.05]} />
+        <meshBasicMaterial color="black" opacity={0.2} transparent />
+      </mesh>
+    </group>
+  );
+};

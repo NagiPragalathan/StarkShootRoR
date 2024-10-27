@@ -1,0 +1,318 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@font-face {
+  font-family: "gamettf";
+  src: url("./fonts/game.ttf");
+}
+@font-face {
+  font-family: "mclaren";
+  src: url("./fonts/McLaren-Regular.ttf");
+}
+
+.root {
+  width: 100vw;
+  height: 100vh;
+}
+.root2 {
+  width: 60vw;
+  height: 82vh;
+}
+
+body {
+  margin: 0;
+}
+
+.herobtn {
+  border-radius: 100px;
+  border: 0.8px solid #fff;
+  background: #719c0c;
+  box-shadow: 4px 4px 8.3px 1px rgba(255, 255, 255, 0.57) inset;
+}
+
+.text-bg {
+  box-shadow: -5.605757713317871px 5.605757713317871px 3.0184848308563232px 0px
+    #00000080;
+
+  box-shadow: -1.7248485088348389px 1.810164451599121px 3.4496970176696777px 0px
+    #b9ff234d;
+}
+
+.homeprofilebg {
+  background: rgba(13, 13, 13, 0.74);
+  border-radius: 13px;
+  border: 1px solid #9fc610;
+  background: rgba(13, 13, 13, 0.74);
+}
+
+.homebox {
+  border-radius: 20px;
+  border: 1px solid rgba(159, 198, 16, 0.26);
+  background: rgba(13, 13, 13, 0.74);
+}
+
+.mapbox {
+  border-radius: 6.25px;
+  border: 1.25px solid #9fc610;
+  background: rgba(0, 0, 0, 0.69);
+}
+
+.playbtm {
+  border-radius: 10px;
+  background: #9fc610;
+  box-shadow: 0px 0px 26.6px 9px rgba(20, 20, 21, 0.39) inset;
+}
+
+.herotext {
+  color: #c9fa00;
+  font-feature-settings: "clig" off, "liga" off;
+  font-family: "gamettf";
+
+  font-size: 262.622px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 242.622px; /* 100% */
+  letter-spacing: 4.293px;
+  text-transform: uppercase;
+}
+@media only screen and (max-width: 600px) {
+  .herotext {
+    font-size: 62.622px;
+  }
+}
+
+.fontpop {
+  font-family: "Poppins";
+}
+
+.herobtn2 {
+  border-radius: 164.565px;
+  border: 0.919px solid rgba(185, 255, 35, 0.95);
+  background: #000;
+}
+
+.glow1 {
+  width: 87.014px;
+  height: 293.875px;
+  flex-shrink: 0;
+}
+
+.glow2 {
+  width: 82.909px;
+  height: 293.875px;
+  flex-shrink: 0;
+}
+
+.glow3 {
+  width: 139.547px;
+  height: 300.442px;
+  flex-shrink: 0;
+}
+
+@keyframes slideInFromBottom {
+  0% {
+    top: 40%;
+    left: 49%;
+    transform: translate(-50%, 0);
+  }
+  100% {
+    top: 65%;
+    left: 49%;
+    transform: translate(-50%, -50%);
+  }
+}
+
+.herobg {
+  position: absolute;
+  /* left: 30%;
+  top: 10%; */
+  animation: slideInFromBottom 1s ease-out;
+  z-index: 1;
+}
+
+.gamefont {
+  font-family: "gamettf";
+}
+
+.mcfont {
+  font-family: "mclaren";
+}
+
+.herotxt {
+  font-family: "gamettf", sans-serif;
+  font-weight: 700;
+  letter-spacing: 8px;
+  margin-top: 20px;
+  color: #2d343a;
+  z-index: 2;
+}
+
+.herotxtd {
+  font-family: "Handjet", sans-serif;
+  font-weight: 700;
+  /* letter-spacing: 8px; */
+  /* margin-top: 5px; */
+  color: #161b32;
+  z-index: 2;
+}
+
+.text-container {
+  position: absolute;
+  text-align: center;
+}
+
+.additional-content {
+  position: absolute;
+  z-index: 2;
+  text-align: right;
+}
+
+.highlight-text {
+  color: #c9fa00;
+  border: 1px solid #c9fa00;
+  padding: 1rem;
+  border-radius: 0.675rem;
+  font-size: 1.2rem;
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.description-text {
+  font-size: 1rem;
+  line-height: 1.5;
+  text-align: left;
+  margin-bottom: 1rem;
+  display: -webkit-box;
+  -webkit-line-clamp: 5;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.lobbyprof {
+  font-family: "Galindo", sans-serif;
+}
+
+.playnowbtn {
+  font-family: "Galindo", sans-serif;
+  font-weight: "extra-bold";
+  font-style: normal;
+  border: 1px solid #c9fa00;
+  border-left-width: 0.5rem;
+  padding: 0.5rem 2.1rem;
+  margin-top: 0.5rem;
+  border-radius: 9999px;
+  font-size: 1.45rem;
+  /* width: 1rem; */
+  text-align: center;
+  display: inline-block;
+}
+
+.hrtxt {
+  font-family: "Poppins", sans-serif;
+  font-weight: 400;
+  font-style: normal;
+  white-space: nowrap;
+}
+
+@keyframes runningText {
+  0% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.running-text-container {
+  overflow: hidden;
+  white-space: nowrap;
+  position: relative;
+  width: 100%;
+}
+
+.running-text {
+  display: inline-block;
+  white-space: nowrap;
+  animation: runningText 20s linear infinite;
+}
+
+.hero2txt {
+  font-family: "Handjet", sans-serif;
+  font-weight: 700;
+  text-align: center;
+  font-size: 60px;
+  color: #c9fa00;
+}
+
+.hero2txt1 {
+  font-family: "Handjet", sans-serif;
+  font-weight: 700;
+  text-align: center;
+  /* line-height: 60px; */
+  color: #c9fa00;
+}
+
+.herodesctxt {
+  font-family: "Poppins", sans-serif;
+  font-weight: 400;
+}
+
+.card1 {
+  background: linear-gradient(
+    180deg,
+    rgba(197, 244, 4, 0.11) 0%,
+    rgba(115, 142, 2, 0) 100%
+  );
+  border-radius: 20px;
+  border-top-left-radius: 1px solid;
+  border-left: 1px solid #94a358;
+  opacity: 90%;
+}
+
+.card2 {
+  background: linear-gradient(
+    180deg,
+    rgba(201, 250, 0, 0.5) 0%,
+    rgba(119, 148, 0, 0) 100%
+  );
+  border-radius: 20px;
+  border-image-source: linear-gradient(
+    180deg,
+    rgba(197, 244, 4, 0.5) 0%,
+    rgba(115, 142, 2, 0) 100%
+  );
+}
+
+.playnow {
+  font-family: "Handjet", sans-serif;
+  font-weight: 800;
+  color: #c9fa00;
+  letter-spacing: 2px;
+  font-size: 2.5rem;
+}
+
+.homebox {
+  border-radius: 20px;
+  border: 1px solid rgba(159, 198, 16, 0.26);
+  background: rgba(13, 13, 13, 0.74);
+}
+
+.mapbox {
+  border-radius: 6.25px;
+  border: 1.25px solid #9fc610;
+  background: rgba(0, 0, 0, 0.69);
+}
+
+.playbtm {
+  border-radius: 10px;
+  background: #9fc610;
+  box-shadow: 0px 0px 26.6px 9px rgba(20, 20, 21, 0.39) inset;
+}
+
+.dynamic-shadow-dom {
+  --dynamic-connect-button-background: #161b32;
+  --dynamic-connect-button-color: #fff;
+  --dynamic-connect-button-background-hover: #fff;
+  --dynamic-connect-button-color-hover: #161b32;
+}
