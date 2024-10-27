@@ -12,14 +12,14 @@ export const Map = () => {
 
     // Set the map file based on the selected map
     if (selectedMap === "Bermuda") {
-      setMapFile("models/map1.glb"); // Bermuda map
-      console.log("models/map1.glb is loaded !")
+      setMapFile("models/map2.glb"); // Bermuda map
+      console.log("models/map2.glb is loaded !")
     } else if (selectedMap === "Pochinki") {
       setMapFile("models/map.glb"); // Pochinki map
       console.log("models/map.glb is loaded !")
     } else {
       setMapFile("models/map.glb"); // Default to Pochinki if no map is selected
-      console.log("models/map1.glb is loaded ! in else statements :)")
+      console.log("models/map2.glb is loaded ! in else statements :)")
     }
   }, []); // Run only once on component mount
 
@@ -48,5 +48,5 @@ export const Map = () => {
 };
 
 // Preload both map files
-useGLTF.preload("models/map1.glb");
+useGLTF.preload("models/map2.glb");
 useGLTF.preload("models/map.glb");
