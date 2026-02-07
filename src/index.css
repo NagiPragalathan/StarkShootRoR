@@ -637,6 +637,19 @@ body {
   animation: flash-red 1s infinite;
 }
 
+.stark-hud-card.right-aligned {
+  clip-path: polygon(0 0,
+      100% 0,
+      100% 100%,
+      15px 100%,
+      0 calc(100% - 15px));
+}
+
+.stark-hud-card.right-aligned::before {
+  left: auto;
+  right: 0;
+}
+
 @keyframes flash-red {
 
   0%,

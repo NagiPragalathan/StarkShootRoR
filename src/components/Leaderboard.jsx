@@ -131,6 +131,21 @@ export const Leaderboard = () => {
     setMuted(false);
   };
 
+  const [showExitConfirmation, setShowExitConfirmation] = useState(false);
+
+  const handleReturnToLobby = () => {
+    setShowExitConfirmation(true);
+  };
+
+  const confirmExit = () => {
+    navigate("/");
+    window.location.reload();
+  };
+
+  const cancelExit = () => {
+    setShowExitConfirmation(false);
+  };
+
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -164,12 +179,12 @@ export const Leaderboard = () => {
         {/* Left Side: Bio-Monitor & Stats Toggle */}
         <div className="flex flex-col space-y-4 pointer-events-auto">
           {/* Main Bio-Monitor (Local Player Health) */}
-          <div className={`stark-hud-card p-5 flex flex-col space-y-3 min-w-[320px] ${myHealth < 30 ? 'critical' : ''}`}>
+          <div className={`stark-hud-card p-5 flex flex-col justify-between h-[180px] min-w-[320px] ${myHealth < 30 ? 'critical' : ''}`}>
             <div className="scanline-overlay"></div>
             <div className="relative z-10 flex justify-between items-start pl-3">
               <div className="flex flex-col gap-0.5">
                 <div className="flex items-center gap-2">
-                  <div className={`w-2 h-2 rounded-sm rotate-45 ${myHealth < 30 ? 'bg-red-500 animate-ping' : 'bg-lime'}`}></div>
+                  <div className={`w-2 h-2 rounded-sm rotate-45 ${myHealth > 50 ? 'bg-lime' : myHealth > 20 ? 'bg-orange-500' : 'bg-red-500 animate-ping'}`}></div>
                   <span className="text-[10px] text-white/80 font-black tracking-[0.25em] uppercase border-b border-white/10 pb-1">
                     {me?.state.profile?.name || "OPERATIVE"}
                   </span>
@@ -189,22 +204,27 @@ export const Leaderboard = () => {
                 )}
               </div>
               <div className="flex flex-col items-end">
-                <span className={`text-4xl font-black italic leading-none drop-shadow-lg ${myHealth < 30 ? 'text-red-500 animate-pulse' : 'text-white'}`}>{Math.round(myHealth)}%</span>
-                <span className="text-[7px] text-white/40 font-bold tracking-widest uppercase font-mono mt-1 bg-black/20 px-1 rounded">SYSTEM: {myHealth < 30 ? 'FAILING' : 'ONLINE'}</span>
+                <span className={`text-4xl font-black italic leading-none drop-shadow-lg ${myHealth > 50 ? 'text-white' : myHealth > 20 ? 'text-orange-500' : 'text-red-500 animate-pulse'}`}>{Math.round(myHealth)}%</span>
+                <span className={`text-[7px] font-bold tracking-widest uppercase font-mono mt-1 bg-black/20 px-1 rounded ${myHealth > 50 ? 'text-white/40' : myHealth > 20 ? 'text-orange-500/80' : 'text-red-500'}`}>SYSTEM: {myHealth > 50 ? 'ONLINE' : myHealth > 20 ? 'WARNING' : 'FAILING'}</span>
               </div>
             </div>
 
             {/* Dual-Phase Energy Rail */}
-            <div className="relative z-10 mt-1 pl-3">
-              <div className="h-3 bg-black/40 relative skew-x-[-15deg] border border-white/5 overflow-hidden">
+            <div className="relative z-10 mt-1 pl-3 w-full pr-1">
+              <div className="h-4 bg-gray-900/80 relative skew-x-[-15deg] border border-white/10 overflow-hidden shadow-inner backdrop-blur-sm">
+                {/* Background Grid Pattern */}
+                <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(255,255,255,0.05)_1px,transparent_1px)] bg-[size:10%_100%] pointer-events-none"></div>
                 {/* Damage Memory (Red flash) */}
                 <div
                   className="absolute inset-0 bg-red-600 transition-all duration-300 ease-out"
                   style={{ width: `${displayHealth}%`, opacity: 0.8 }}
                 />
-                {/* Core Energy (Green/Red Gradient) */}
+                {/* Core Energy (Green/Orange/Red Gradient) */}
                 <div
-                  className={`absolute inset-0 transition-all duration-500 ease-out ${myHealth < 30 ? 'health-gradient critical' : 'health-gradient'}`}
+                  className={`absolute inset-0 transition-all duration-500 ease-out ${myHealth > 50 ? 'bg-gradient-to-r from-lime-600 to-lime-400 shadow-[0_0_10px_rgba(163,255,18,0.3)]' :
+                    myHealth > 20 ? 'bg-gradient-to-r from-orange-600 to-yellow-500 shadow-[0_0_15px_rgba(249,115,22,0.4)]' :
+                      'bg-gradient-to-r from-red-600 to-red-500 shadow-[0_0_20px_rgba(239,68,68,0.6)] animate-pulse'
+                    }`}
                   style={{ width: `${myHealth}%` }}
                 >
                   <div className="absolute inset-0 bg-[linear-gradient(90deg,transparent_0%,rgba(255,255,255,0.4)_50%,transparent_100%)] animate-shimmer" />
@@ -215,6 +235,22 @@ export const Leaderboard = () => {
                 {[...Array(10)].map((_, i) => (
                   <div key={i} className="w-[1px] h-1 bg-white/20"></div>
                 ))}
+              </div>
+
+              {/* Combat Metrics */}
+              <div className="flex items-center gap-4 mt-4 justify-between px-1">
+                <div className="flex items-center gap-2 bg-black/40 px-3 py-1.5 border border-white/5 skew-x-[-10deg]">
+                  <span className="text-[10px] text-lime font-black tracking-widest uppercase skew-x-[10deg]">KILLS</span>
+                  <span className="text-xl text-white font-black italic skew-x-[10deg]">{me?.state.kills || 0}</span>
+                </div>
+                <div className="flex items-center gap-2 bg-black/40 px-3 py-1.5 border border-white/5 skew-x-[-10deg]">
+                  <span className="text-[10px] text-red-500 font-black tracking-widest uppercase skew-x-[10deg]">DEATHS</span>
+                  <span className="text-xl text-white font-black italic skew-x-[10deg]">{me?.state.deaths || 0}</span>
+                </div>
+                <div className="flex items-center gap-2 bg-black/40 px-3 py-1.5 border border-white/5 skew-x-[-10deg]">
+                  <span className="text-[10px] text-yellow-400 font-black tracking-widest uppercase skew-x-[10deg]">STREAK</span>
+                  <span className="text-xl text-white font-black italic skew-x-[10deg]">{me?.getState("killStreak") || 0}</span>
+                </div>
               </div>
             </div>
           </div>
@@ -263,13 +299,13 @@ export const Leaderboard = () => {
                       <h2 className="font-bold text-[10px] tracking-wider uppercase text-white/90 truncate max-w-[100px]">
                         {player.state.profile.name}
                       </h2>
-                      <span className={`text-[9px] font-mono font-bold ${player.state.health < 30 ? 'text-red-500' : 'text-white/60'}`}>{Math.round(player.state.health)}%</span>
+                      <span className={`text-[9px] font-mono font-bold ${player.state.health > 50 ? 'text-lime' : player.state.health > 20 ? 'text-orange-500' : 'text-red-500'}`}>{Math.round(player.state.health)}%</span>
                     </div>
 
                     {/* Mini Health Bar */}
                     <div className="h-1 bg-white/10 w-full relative overflow-hidden">
                       <div
-                        className={`absolute inset-0 transition-all duration-500 ${player.state.health < 30 ? 'bg-red-500' : 'bg-lime'}`}
+                        className={`absolute inset-0 transition-all duration-500 ${player.state.health > 50 ? 'bg-lime' : player.state.health > 20 ? 'bg-orange-500' : 'bg-red-500'}`}
                         style={{ width: `${player.state.health}%` }}
                       />
                     </div>
@@ -329,48 +365,83 @@ export const Leaderboard = () => {
 
 
         {/* Right Side: Secondary Vital Signs & Comms */}
+        {/* Right Side: Systems & Comms */}
         <div className="flex flex-col items-end space-y-4 pointer-events-auto">
-          {/* Secondary Health Bar (Top Right) */}
-          <div className="flex flex-col items-end space-y-1">
-            <div className="flex items-center space-x-3">
-              <span className="text-[10px] text-white/40 font-black tracking-widest uppercase">VITALS</span>
-              <div className="w-48 h-1 bg-white/10 relative">
-                <div className="absolute inset-0 bg-white transition-all duration-300" style={{ width: `${myHealth}%` }}></div>
+
+          {/* Systems Panel */}
+          <div className="stark-hud-card right-aligned p-5 pl-4 flex flex-col justify-between items-end h-[180px] min-w-[340px] relative overflow-hidden group">
+            <div className="scanline-overlay"></div>
+
+            {/* Header */}
+            <div className="relative z-10 flex items-center justify-end gap-2 border-b border-white/10 pb-2 w-full pr-3">
+              <span className="text-[12px] text-white/90 font-black tracking-[0.2em] uppercase group-hover:text-cyan-400 transition-colors drop-shadow-md">SYSTEMS & COMMS</span>
+              <div className="w-2 h-2 bg-cyan-400 animate-pulse rounded-full shadow-[0_0_8px_rgba(34,211,238,0.8)]"></div>
+            </div>
+
+            {/* Dynamic Status Readout */}
+            <div className="relative z-10 flex flex-col items-end w-full space-y-1">
+              <div className="flex items-center gap-2">
+                <span className="text-[8px] text-white/40 font-mono tracking-widest uppercase">SIGNAL STRENGTH</span>
+                <div className="flex gap-0.5">
+                  <div className="w-0.5 h-2 bg-cyan-500/40 animate-pulse" style={{ animationDelay: '0ms' }}></div>
+                  <div className="w-0.5 h-2 bg-cyan-500/60 animate-pulse" style={{ animationDelay: '150ms' }}></div>
+                  <div className="w-0.5 h-2 bg-cyan-500/80 animate-pulse" style={{ animationDelay: '300ms' }}></div>
+                  <div className="w-0.5 h-2 bg-cyan-500 animate-pulse" style={{ animationDelay: '450ms' }}></div>
+                </div>
+              </div>
+              <div className={`text-[9px] font-black tracking-tighter uppercase px-1.5 py-0.5 border ${muted ? 'text-cyan-400 border-cyan-500/30 bg-cyan-900/20' : 'text-white/50 border-white/10'}`}>
+                {muted ? 'COMMS: ONLINE' : 'COMMS: STANDBY'}
               </div>
             </div>
-            <div className="text-[10px] text-lime font-black tracking-tighter uppercase opacity-60">SYSTEM STATUS: OPTIMAL</div>
-          </div>
 
-          <div className="flex space-x-2">
-            {!muted ? (
+            {/* Control Matrix */}
+            <div className="relative z-10 flex flex-col gap-2 mt-1 w-full">
+              <div className="flex gap-2 justify-end">
+                {!muted ? (
+                  <button
+                    type="button"
+                    className="bg-cyan-500/10 hover:bg-cyan-500/30 border border-cyan-500/50 text-[9px] font-black tracking-widest uppercase px-4 py-2 transition-all skew-x-[-10deg] hover:skew-x-[-5deg] hover:scale-105 active:scale-95 text-white flex-1 hover:shadow-[0_0_15px_rgba(34,211,238,0.3)]"
+                    onClick={handleJoinRoom}
+                  >
+                    LINK AUDIO
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    className="bg-red-500/10 hover:bg-red-500/30 border border-red-500/50 text-[9px] font-black tracking-widest uppercase px-4 py-2 transition-all skew-x-[-10deg] hover:skew-x-[-5deg] hover:scale-105 active:scale-95 text-white flex-1 hover:shadow-[0_0_15px_rgba(239,68,68,0.3)]"
+                    onClick={handleExitRoom}
+                  >
+                    UNLINK
+                  </button>
+                )}
+
+                <button
+                  className="bg-white/5 hover:bg-white/20 border border-white/10 p-2 transition-all hover:border-lime/50 group/fs relative overflow-hidden"
+                  onClick={() => {
+                    if (document.fullscreenElement) document.exitFullscreen();
+                    else document.documentElement.requestFullscreen();
+                  }}
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-3.5 h-3.5 text-white/60 group-hover/fs:text-lime transition-colors relative z-10">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75h-4.5m4.5 0v4.5m0-4.5L15 9m5.25 11.25h-4.5m4.5 0v-4.5m0 4.5L15 15" />
+                  </svg>
+                </button>
+              </div>
+
               <button
                 type="button"
-                className="bg-blue-600/20 hover:bg-blue-600/40 border border-blue-500/50 text-[10px] font-black tracking-widest uppercase px-6 py-2 transition-all skew-x-[-12deg]"
-                onClick={handleJoinRoom}
+                className="w-full bg-red-600/10 hover:bg-red-600/30 border border-red-500/30 text-[9px] font-black tracking-[0.2em] uppercase py-2 transition-all hover:border-red-500/80 hover:text-white text-white group/exit relative overflow-hidden"
+                onClick={handleReturnToLobby}
               >
-                LINK COMMS
+                <span className="relative z-10 flex items-center justify-center gap-2">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-3 h-3 group-hover/exit:animate-pulse">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75" />
+                  </svg>
+                  ABORT MISSION
+                </span>
+                <div className="absolute inset-0 bg-red-600/10 translate-x-[-100%] group-hover/exit:translate-x-0 transition-transform duration-300"></div>
               </button>
-            ) : (
-              <button
-                type="button"
-                className="bg-red-600/20 hover:bg-red-600/40 border border-red-500/50 text-[10px] font-black tracking-widest uppercase px-6 py-2 transition-all skew-x-[-12deg]"
-                onClick={handleExitRoom}
-              >
-                UNLINK COMMS
-              </button>
-            )}
-
-            <button
-              className="bg-white/5 hover:bg-white/20 border border-white/10 p-2 transition-all"
-              onClick={() => {
-                if (document.fullscreenElement) document.exitFullscreen();
-                else document.documentElement.requestFullscreen();
-              }}
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4 text-white/60">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75h-4.5m4.5 0v4.5m0-4.5L15 9m5.25 11.25h-4.5m4.5 0v-4.5m0 4.5L15 15" />
-              </svg>
-            </button>
+            </div>
           </div>
 
           {/* Peer List */}
@@ -379,6 +450,41 @@ export const Leaderboard = () => {
           </div>
         </div>
       </div >
+      {/* Mission Abort Confirmation Modal */}
+      {showExitConfirmation && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm animate-in fade-in duration-200 pointer-events-auto">
+          <div className="stark-hud-card p-8 flex flex-col items-center gap-6 min-w-[400px] border border-red-500/50 shadow-[0_0_50px_rgba(239,68,68,0.2)] relative">
+            <div className="scanline-overlay"></div>
+
+            <div className="flex flex-col items-center gap-2 relative z-10 text-center">
+              <div className="w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center border border-red-500/50 animate-pulse">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-8 h-8 text-red-500">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+                </svg>
+              </div>
+              <h2 className="text-2xl font-black italic tracking-widest text-white uppercase mt-4 drop-shadow-lg">ABORT MISSION?</h2>
+              <p className="text-xs text-white/60 font-mono tracking-wider max-w-[280px]">
+                CONFIRMING THIS ACTION WILL TERMINATE YOUR CONNECTION AND RETURN YOU TO BASE.
+              </p>
+            </div>
+
+            <div className="flex gap-4 w-full relative z-10 mt-2">
+              <button
+                onClick={cancelExit}
+                className="flex-1 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-lime/50 text-white font-black tracking-widest py-3 skew-x-[-10deg] transition-all hover:scale-105 active:scale-95 group"
+              >
+                <span className="skew-x-[10deg] block group-hover:text-lime transition-colors">RESUME</span>
+              </button>
+              <button
+                onClick={confirmExit}
+                className="flex-1 bg-red-600/20 hover:bg-red-600/40 border border-red-500/50 text-red-400 font-black tracking-widest py-3 skew-x-[-10deg] transition-all hover:scale-105 active:scale-95 hover:shadow-[0_0_20px_rgba(220,38,38,0.4)] group"
+              >
+                <span className="skew-x-[10deg] block text-white group-hover:text-red-200 transition-colors">CONFIRM ABORT</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 };
