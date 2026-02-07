@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { usePlayersList } from "playroomkit";
+import { usePlayersList, useMultiplayerState, isHost } from "playroomkit";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { setPlayerData } from "../../store/authslice";
@@ -23,7 +23,9 @@ const getRoomIdFromURL = () => {
 export const Leaderboard = () => {
   const players = usePlayersList(true);
   const time = useSelector((state) => state.authslice.selectedTime);
-  const [timer, setTimer] = useState(time);
+  const [timer, setTimer] = useMultiplayerState("timer");
+  const [gameStarted, setGameStarted] = useMultiplayerState("gameStarted", false);
+  console.log("Leaderboard Sycned Timer:", timer);
   const dispatch = useDispatch();
   useEffect(() => {
     setRoomId(getRoomIdFromURL());
@@ -118,24 +120,13 @@ export const Leaderboard = () => {
       window.removeEventListener("beforeunload", handleBeforeUnload);
     };
   }, []);
+
+
+
   useEffect(() => {
-    const intervalId = setInterval(() => {
-      const storedData = localStorage.getItem("myData");
-      if (
-        storedData !== null &&
-        storedData !== "false" &&
-        storedData !== "true "
-      ) {
-        setTimer((prevTimer) => (prevTimer > 0 ? prevTimer - 1 : 0));
-      }
-    }, 1000);
+    const minutes = Math.floor(timer / 60);
+    const remainingSeconds = timer % 60;
 
-    return () => clearInterval(intervalId);
-  }, []);
-
-  const formatTime = (seconds) => {
-    const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = seconds % 60;
     if (minutes < 1) {
       var obj = document.getElementById("timer_con");
       if (obj) {
@@ -148,12 +139,20 @@ export const Leaderboard = () => {
         obj.style.border = "2px solid rgb(252, 38, 68)";
         obj.style.transition = "background-color 0.5s ease-in-out";
       }
-      if (minutes === 0 && remainingSeconds < 1) {
+      if (minutes === 0 && remainingSeconds < 1 && gameStarted) {
         localStorage.setItem("myData", "false");
         handleButtonClick();
         navigate("/result");
       }
     }
+  }, [timer, gameStarted]);
+
+  const formatTime = (seconds) => {
+    if (typeof seconds !== "number" || isNaN(seconds)) {
+      return "00:00";
+    }
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = Math.floor(seconds % 60);
     return `${String(minutes).padStart(2, "0")}:${String(
       remainingSeconds
     ).padStart(2, "0")}`;
@@ -201,7 +200,7 @@ export const Leaderboard = () => {
           ))}
         </div>
 
-        <div>
+        <div className="flex flex-col items-center">
           <p
             id="timer_con"
             className="mt-8"
@@ -214,7 +213,7 @@ export const Leaderboard = () => {
               border: "2px solid #2682fc",
             }}
           >
-            Time: {formatTime(timer)}
+            Time: {formatTime(timer ?? time ?? 60)}
           </p>
         </div>
         <div>

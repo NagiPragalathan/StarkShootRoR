@@ -6,8 +6,12 @@ import {
   myPlayer,
   onPlayerJoin,
   useMultiplayerState,
+  useIsHost,
+  setState,
+  getState,
 } from "playroomkit";
 import { useEffect, useState, useRef } from "react";
+import { useSelector } from "react-redux";
 import { Bullet } from "./Bullet";
 import { BulletHit } from "./BulletHit";
 import { CharacterController } from "./CharacterController";
@@ -19,10 +23,24 @@ export const Experience = ({ downgradedPerformance = false }) => {
   const [mode, setMode] = useState("Normal"); // State for mode
   const [characterPosition, setCharacterPosition] = useState(null); // State for character position
   const lastPositionRef = useRef(null); // Store the last known position
+  const time = useSelector((state) => state.authslice.selectedTime);
+
+  const [gameStarted, setGameStarted] = useMultiplayerState("gameStarted", false);
+  const [timer, setTimer] = useMultiplayerState("timer");
 
   const start = async () => {
     // Start the game
     await insertCoin();
+
+    const host = isHost();
+    if (host) {
+      console.log("Setting game started and host initial timer", time);
+      setState("gameStarted", true, true);
+      // AUTHORITATIVE: Only set initial timer if it hasn't been set by host yet
+      if (getState("timer") === undefined) {
+        setState("timer", time || 60, true);
+      }
+    }
 
     // Create a joystick controller for each joining player
     onPlayerJoin((state) => {
@@ -47,7 +65,9 @@ export const Experience = ({ downgradedPerformance = false }) => {
 
   useEffect(() => {
     start();
+  }, []);
 
+  useEffect(() => {
     // Add keydown event listener for "m" key
     const handleKeyDown = (event) => {
       if (event.key === "m") {
@@ -79,6 +99,28 @@ export const Experience = ({ downgradedPerformance = false }) => {
 
   const [networkBullets, setNetworkBullets] = useMultiplayerState("bullets", []);
   const [networkHits, setNetworkHits] = useMultiplayerState("hits", []);
+
+  const amIHost = useIsHost();
+
+  useEffect(() => {
+    if (amIHost && gameStarted) {
+      console.log("AUTHORITATIVE TIMER STARTING. Initial state:", getState("timer"));
+      const interval = setInterval(() => {
+        const current = getState("timer") ?? time ?? 60;
+        if (current > 0) {
+          const next = current - 1;
+          setState("timer", next, true);
+          console.log("AUTHORITATIVE TICK:", next);
+        } else {
+          console.log("AUTHORITATIVE TIMER: 0 reached");
+        }
+      }, 1000);
+      return () => {
+        console.log("AUTHORITATIVE TIMER CLEANUP");
+        clearInterval(interval);
+      };
+    }
+  }, [amIHost, gameStarted, time]);
 
   const onFire = (bullet) => {
     if (isHost()) {
