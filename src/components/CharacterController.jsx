@@ -19,9 +19,9 @@ const itemsData = {
   ]
 };
 
-const MOVEMENT_SPEED = 215;
+const MOVEMENT_SPEED = 260;
 const FIRE_RATE = 380;
-const JUMP_FORCE = 10;
+const JUMP_FORCE = 3;
 
 export const WEAPON_OFFSET = {
   x: -0.2,
@@ -342,9 +342,9 @@ export const CharacterController = ({
       setAnimation("Jump");
       const angleForJump = finalAngle !== null ? finalAngle : character.current.rotation.y;
       const jumpImpulse = {
-        x: Math.sin(angleForJump) * MOVEMENT_SPEED * delta,
+        x: 0,
         y: JUMP_FORCE,
-        z: Math.cos(angleForJump) * MOVEMENT_SPEED * delta,
+        z: 0,
       };
       rigidbody.current.applyImpulse(jumpImpulse, true);
     } else if (playerWorldPos.y > 0) {
