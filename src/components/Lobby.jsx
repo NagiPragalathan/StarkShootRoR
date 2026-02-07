@@ -43,6 +43,35 @@ const mapModels = [
   "models/broken_house_map.glb"
 ];
 
+const itemsData = {
+  CHARACTERS: [
+    { name: "SHADOW ELITE", price: "FREE", color: "#000000", power: "STEALTH + 15%", desc: "The ultimate stealth operative, merging with shadows for lethal efficiency." },
+    { name: "URBAN STRIKER", price: "FREE", color: "#3b82f6", power: "ACCURACY + 10%", desc: "City combat specialist with unmatched precision in close quarters." },
+    { name: "JUNGLE GHOST", price: "FREE", color: "#166534", power: "STAMINA + 15%", desc: "Endurance expert trained in deep-forest survival operations." },
+    { name: "ARCTIC WOLF", price: "FREE", color: "#f8fafc", power: "REGEN + 2%/sec", desc: "Tough survivor optimized for sub-zero medical recovery." },
+    { name: "RECON ELITE", price: "500 STK", color: "#4ade80", power: "SPEED + 10%", desc: "Highly agile scout specialized in rapid deployment." },
+    { name: "DESERT FOX", price: "750 STK", color: "#f59e0b", power: "DURABILITY + 15%", desc: "Heavy mercenary built to survive high-impact environments." },
+    { name: "NEON REAPER", price: "1200 STK", color: "#a3ff12", power: "DAMAGE + 15%", desc: "Experimental cyber-soldier with ultra-lethal efficiency." },
+    { name: "PLASMA VORTEX", price: "1800 STK", color: "#c026d3", power: "SHIELD + 20%", desc: "High-tech vanguard equipped with energy-deflection armor." },
+  ],
+  WEAPONS: [
+    { name: "AK", price: "FREE", stats: { dmg: 40, rate: 80, range: 60 } },
+    { name: "Sniper", price: "900 STK", stats: { dmg: 95, rate: 10, range: 95 } },
+    { name: "Sniper_2", price: "1200 STK", stats: { dmg: 98, rate: 15, range: 98 } },
+    { name: "RocketLauncher", price: "1500 STK", stats: { dmg: 100, rate: 5, range: 50 } },
+    { name: "GrenadeLauncher", price: "FREE", stats: { dmg: 90, rate: 15, range: 40 } },
+    { name: "SMG", price: "FREE", stats: { dmg: 30, rate: 95, range: 40 } },
+    { name: "Shotgun", price: "800 STK", stats: { dmg: 85, rate: 20, range: 20 } },
+    { name: "Pistol", price: "FREE", stats: { dmg: 25, rate: 60, range: 30 } },
+    { name: "Revolver", price: "400 STK", stats: { dmg: 50, rate: 30, range: 45 } },
+    { name: "Revolver_Small", price: "FREE", stats: { dmg: 45, rate: 35, range: 40 } },
+    { name: "ShortCannon", price: "1100 STK", stats: { dmg: 95, rate: 10, range: 35 } },
+    { name: "Knife_1", price: "FREE", stats: { dmg: 35, rate: 85, range: 5 } },
+    { name: "Knife_2", price: "250 STK", stats: { dmg: 45, rate: 90, range: 5 } },
+    { name: "Shovel", price: "FREE", stats: { dmg: 30, rate: 50, range: 10 } },
+  ]
+};
+
 const Lobby = () => {
   const dispatch = useDispatch();
   const playerinfo = useSelector((state) => state.authslice.playerdata);
@@ -53,11 +82,24 @@ const Lobby = () => {
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const [username, setUsername] = useState("");
   const [isRegistering, setIsRegistering] = useState(false);
-  const [activeButton, setActiveButton] = useState(null);
+  const [activeButton, setActiveButton] = useState(2); // Default to 5 mins
+  const [customTimeModal, setCustomTimeModal] = useState(false);
+  const [customMinutes, setCustomMinutes] = useState("");
   const videoRef = useRef(null);
+
+  // Equipped State for Character & Weapon
+  const [equippedGear, setEquippedGear] = useState({
+    CHARACTERS: "SHADOW ELITE",
+    WEAPONS: "AK"
+  });
+  const [credits, setCredits] = useState(14250);
 
   // Auto-play audio handling for browser policies
   useEffect(() => {
+    // Load credits
+    const storedCredits = localStorage.getItem("stark_credits");
+    if (storedCredits) setCredits(parseInt(storedCredits));
+
     const handleInteraction = () => {
       if (videoRef.current) {
         videoRef.current.play().catch(e => console.log("Audio play blocked", e));
@@ -70,7 +112,9 @@ const Lobby = () => {
     return () => window.removeEventListener('click', handleInteraction);
   }, []);
 
-  // Load initial map selection from localStorage
+  const [ownedItems, setOwnedItems] = useState([]);
+
+  // Load initial map selection and equipped gear from localStorage
   useEffect(() => {
     const storedMap = localStorage.getItem("selectedMap");
     if (storedMap) {
@@ -79,7 +123,48 @@ const Lobby = () => {
         setMapIndex(index);
       }
     }
+
+    const storedEquipped = localStorage.getItem("stark_equipped");
+    if (storedEquipped) {
+      setEquippedGear(JSON.parse(storedEquipped));
+    }
+
+    const storedOwned = localStorage.getItem("stark_owned_items");
+    if (storedOwned) {
+      setOwnedItems(JSON.parse(storedOwned));
+    }
+
+    // Auto-select 5 mins (300s) if no time is stored
+    const storedTime = localStorage.getItem("selectedTime");
+    if (!storedTime) {
+      dispatch(setTimer(300));
+      localStorage.setItem("selectedTime", "300");
+      setActiveButton(2);
+    } else {
+      const timeVal = parseInt(storedTime);
+      const standardTimes = [60, 300, 600];
+      const standardIdx = standardTimes.indexOf(timeVal);
+      if (standardIdx !== -1) {
+        setActiveButton(standardIdx + 1);
+      } else {
+        setActiveButton(4); // CUSTOM
+        setCustomMinutes((timeVal / 60).toString());
+      }
+    }
   }, []);
+
+  // Helper to get character color from name
+  const getCharacterColor = (name) => {
+    const char = itemsData.CHARACTERS.find(c => c.name === name);
+    return char ? char.color : "#4ade80";
+  };
+
+  const isMapOwned = (name) => {
+    // First 4 maps are always free
+    const freeMaps = ["bermuda", "pochinki", "knife fight map", "free arena"];
+    if (freeMaps.includes(name)) return true;
+    return ownedItems.includes(name);
+  };
 
   const leftClick = () => {
     startTransition(() => {
@@ -102,10 +187,31 @@ const Lobby = () => {
   };
 
   const setGameTime = (time, buttonId) => {
+    if (buttonId === 4) {
+      setCustomTimeModal(true);
+      return;
+    }
     startTransition(() => {
       dispatch(setTimer(time));
       setActiveButton(buttonId);
       localStorage.setItem("selectedTime", time);
+    });
+  };
+
+  const handleCustomTimeSubmit = (e) => {
+    e.preventDefault();
+    const mins = parseInt(customMinutes);
+    if (isNaN(mins) || mins <= 0) {
+      toast.error("INVALID TEMPORAL CLEARANCE // ENTER POSITIVE MINUTES");
+      return;
+    }
+    const secs = mins * 60;
+    startTransition(() => {
+      dispatch(setTimer(secs));
+      setActiveButton(4);
+      localStorage.setItem("selectedTime", secs.toString());
+      setCustomTimeModal(false);
+      toast.success(`TEMPORAL WINDOW SET: ${mins} MINUTES`);
     });
   };
 
@@ -147,7 +253,8 @@ const Lobby = () => {
               <Suspense fallback={null}>
                 <CharacterSoldier
                   animation="Idle"
-                  weapon="AK"
+                  color={getCharacterColor(equippedGear.CHARACTERS)}
+                  weapon={equippedGear.WEAPONS}
                   position={[-0.1, -1, 0]}
                   scale={0.85}
                 />
@@ -160,6 +267,23 @@ const Lobby = () => {
                 />
               </Suspense>
             </Canvas>
+
+            {/* Character Nameplate */}
+            <div className="absolute bottom-[5%] left-[48%] -translate-x-1/2 flex flex-col items-center pointer-events-none">
+              <div className="flex items-center space-x-3 mb-1">
+                <div className="h-0.5 w-10 bg-gradient-to-r from-transparent to-lime"></div>
+                <span className="text-[10px] text-lime font-black tracking-[0.5em] uppercase">Tactical Unit</span>
+                <div className="h-0.5 w-10 bg-gradient-to-l from-transparent to-lime"></div>
+              </div>
+              <h2 className="text-6xl font-black text-white italic tracking-tighter uppercase drop-shadow-[0_0_20px_rgba(255,255,255,0.4)]">
+                {equippedGear.CHARACTERS}
+              </h2>
+              <div className="mt-4 px-6 py-1 border border-white/20 bg-black/60 backdrop-blur-xl skew-x-[-12deg] shadow-[0_0_15px_rgba(0,0,0,0.5)]">
+                <span className="text-[10px] text-white/80 font-black tracking-widest uppercase italic block skew-x-[12deg]">
+                  Status: Ready for Deployment
+                </span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -201,7 +325,7 @@ const Lobby = () => {
             </div>
             <div className="currency-display flex items-center space-x-4 border-r-lime">
               <div className="text-[10px] font-black text-white/20 uppercase tracking-tighter">Stellar Credits</div>
-              <p className="font-black text-cyan text-xl tabular-nums">250</p>
+              <p className="font-black text-cyan text-xl tabular-nums">{credits.toLocaleString()}</p>
             </div>
           </div>
         </div>
@@ -302,9 +426,22 @@ const Lobby = () => {
                     alt="Map"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
-                  <div className="absolute bottom-3 left-6">
+
+                  {/* Unauthorized Warning Overlay on Map Image */}
+                  {!isMapOwned(mapNames[mapIndex]) && (
+                    <div className="absolute inset-0 bg-red-900/40 backdrop-blur-[1px] z-10 flex flex-col items-center justify-center p-4 border-2 border-red-500/30">
+                      <div className="bg-red-600 text-white text-[10px] font-black px-6 py-1.5 skew-x-[-12deg] shadow-[0_0_15px_rgba(220,38,38,0.5)] animate-pulse mb-2">
+                        UNAUTHORIZED AREA
+                      </div>
+                      <div className="text-[8px] text-white/60 font-black uppercase tracking-[0.2em]">Acquire Clearance in Store</div>
+                    </div>
+                  )}
+
+                  <div className="absolute bottom-3 left-6 z-10">
                     <h2 className="text-2xl font-black text-white italic tracking-tighter uppercase">{mapNames[mapIndex]}</h2>
-                    <span className="text-[9px] text-lime font-bold tracking-widest">READY FOR DEPLOYMENT</span>
+                    <span className={`text-[9px] font-bold tracking-widest ${isMapOwned(mapNames[mapIndex]) ? 'text-lime' : 'text-red-400 opacity-50'}`}>
+                      {isMapOwned(mapNames[mapIndex]) ? "READY FOR DEPLOYMENT" : "SECTOR LOCKED"}
+                    </span>
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-2">
@@ -332,44 +469,124 @@ const Lobby = () => {
               {/* Time Logic */}
               <div className="space-y-3">
                 <span className="text-[10px] text-white/30 font-black tracking-widest uppercase">Deployment window</span>
-                <div className="flex justify-between items-center px-1">
+                <div className="flex justify-between items-center px-1 space-x-2">
                   {[60, 300, 600].map((time, i) => (
                     <button
                       key={time}
                       onClick={() => setGameTime(time, i + 1)}
-                      className={`time-btn px-4 py-2 text-xs ${activeButton === i + 1 ? "time-btn-active" : ""}`}
+                      className={`time-btn flex-1 py-2 text-[10px] font-black tracking-widest ${activeButton === i + 1 ? "time-btn-active" : ""}`}
                     >
-                      {time / 60} MIN
+                      {time / 60}M
                     </button>
                   ))}
+                  <button
+                    onClick={() => setGameTime(0, 4)}
+                    className={`time-btn flex-1 py-2 text-[10px] font-black tracking-widest ${activeButton === 4 ? "time-btn-active" : ""}`}
+                  >
+                    CUSTOM
+                  </button>
                 </div>
               </div>
             </div>
 
-            <Link
-              className="playbtm group relative flex flex-col items-center justify-center p-6"
-              to="/game"
-            >
-              <div className="flex items-center space-x-4">
-                <span className="text-3xl font-black italic tracking-tighter">START MISSION</span>
-                <svg className="w-8 h-8 transform group-hover:translate-x-3 transition-all duration-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={4} d="M13 5l7 7-7 7M5 5l7 7-7 7" />
-                </svg>
-              </div>
-              <div className="absolute top-2 left-6 flex items-center space-x-1 uppercase text-[8px] font-bold opacity-40 group-hover:opacity-100 transition-opacity">
-                <span className="w-1.5 h-1.5 bg-black rounded-full animate-pulse"></span>
-                <span>System: Stable</span>
-                <span className="mx-2">|</span>
-                <span>Auth: Verified</span>
-              </div>
-              <div className="absolute bottom-1 right-8 text-[7px] font-black opacity-30 group-hover:opacity-60">
-                STARK-OS // V2.0.4
-              </div>
-            </Link>
+            <div className="relative group">
+              <Link
+                className={`playbtm w-full group relative flex flex-col items-center justify-center p-6 ${!isMapOwned(mapNames[mapIndex]) ? "opacity-40 grayscale cursor-not-allowed pointer-events-none" : ""
+                  }`}
+                to="/game"
+              >
+                <div className="flex items-center space-x-4">
+                  <span className="text-3xl font-black italic tracking-tighter">
+                    {isMapOwned(mapNames[mapIndex]) ? "START MISSION" : "ACQUIRE CLEARANCE"}
+                  </span>
+                  {isMapOwned(mapNames[mapIndex]) && (
+                    <svg className="w-8 h-8 transform group-hover:translate-x-3 transition-all duration-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={4} d="M13 5l7 7-7 7M5 5l7 7-7 7" />
+                    </svg>
+                  )}
+                </div>
+                {isMapOwned(mapNames[mapIndex]) ? (
+                  <div className="absolute top-2 left-6 flex items-center space-x-1 uppercase text-[8px] font-bold opacity-40 group-hover:opacity-100 transition-opacity">
+                    <span className="w-1.5 h-1.5 bg-black rounded-full animate-pulse"></span>
+                    <span>System: Stable</span>
+                    <span className="mx-2">|</span>
+                    <span>Auth: Verified</span>
+                  </div>
+                ) : (
+                  <div className="absolute top-2 left-6 flex items-center space-x-1 uppercase text-[8px] font-bold text-red-400">
+                    <span className="w-1.5 h-1.5 bg-red-400 rounded-full"></span>
+                    <span>ERROR: UNAUTHORIZED SECTOR</span>
+                  </div>
+                )}
+                <div className="absolute bottom-1 right-8 text-[7px] font-black opacity-30 group-hover:opacity-60">
+                  STARK-OS // V2.0.4
+                </div>
+              </Link>
+            </div>
           </div>
         </div>
       </div>
 
+      {/* Custom Time Modal */}
+      {customTimeModal && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm p-6">
+          <style jsx>{`
+            input::-webkit-outer-spin-button,
+            input::-webkit-inner-spin-button {
+              -webkit-appearance: none;
+              margin: 0;
+            }
+            input[type=number] {
+              -moz-appearance: textfield;
+            }
+          `}</style>
+          <div className="bg-[#10141d] border border-white/20 p-8 w-[400px] relative shadow-[0_0_50px_rgba(0,0,0,0.8)]" style={{ clipPath: 'polygon(0 10, 10 0, 100% 0, 100% 90%, 90% 100%, 0 100%)' }}>
+            <div className="absolute top-0 right-0 w-32 h-32 bg-lime opacity-[0.05] blur-3xl pointer-events-none"></div>
+
+            <div className="space-y-6 relative z-10">
+              <div className="flex items-center space-x-3">
+                <div className="h-4 w-1 bg-lime shadow-[0_0_10px_#A3FF12]"></div>
+                <h3 className="text-sm font-black text-lime tracking-[0.3em] uppercase">Temporal Authorization</h3>
+              </div>
+
+              <div className="space-y-2">
+                <p className="text-2xl font-black text-white italic uppercase tracking-tighter">Enter Match Time</p>
+                <p className="text-[10px] text-white/40 font-bold tracking-widest leading-relaxed">SPECIFY OPERATIONAL WINDOW IN MINUTES FOR THIS MISSION PROTOCOL.</p>
+              </div>
+
+              <form onSubmit={handleCustomTimeSubmit} className="space-y-6">
+                <div className="relative group overflow-hidden">
+                  <input
+                    type="number"
+                    value={customMinutes}
+                    onChange={(e) => setCustomMinutes(e.target.value)}
+                    placeholder="00"
+                    className="w-full bg-white/5 border border-white/10 p-5 text-5xl font-black text-lime italic placeholder:opacity-10 focus:border-lime/50 focus:bg-white/10 focus:outline-none transition-all"
+                    autoFocus
+                  />
+                  <span className="absolute right-5 bottom-5 text-[10px] font-black text-white/30 uppercase tracking-widest">MINS</span>
+                </div>
+
+                <div className="flex space-x-4 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setCustomTimeModal(false)}
+                    className="flex-1 py-4 text-[10px] font-black tracking-[0.3em] uppercase border border-white/10 text-white/50 hover:bg-white/5 hover:text-white transition-all"
+                  >
+                    Abort
+                  </button>
+                  <button
+                    type="submit"
+                    className="flex-1 py-4 text-[12px] font-black tracking-[0.3em] uppercase bg-[#A3FF12] text-black hover:bg-white hover:scale-[1.05] active:scale-[0.95] transition-all shadow-[0_0_30px_rgba(163,255,18,0.4)]"
+                  >
+                    AUTHORIZE Match
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

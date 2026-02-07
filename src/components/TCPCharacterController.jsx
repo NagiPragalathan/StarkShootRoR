@@ -17,6 +17,19 @@ export const WEAPON_OFFSET = {
   z: 0.8,
 };
 
+const itemsData = {
+  CHARACTERS: [
+    { name: "SHADOW ELITE", color: "#000000" },
+    { name: "URBAN STRIKER", color: "#3b82f6" },
+    { name: "JUNGLE GHOST", color: "#166534" },
+    { name: "ARCTIC WOLF", color: "#f8fafc" },
+    { name: "RECON ELITE", color: "#4ade80" },
+    { name: "DESERT FOX", color: "#f59e0b" },
+    { name: "NEON REAPER", color: "#a3ff12" },
+    { name: "PLASMA VORTEX", color: "#c026d3" },
+  ]
+};
+
 const WEAPONS = [
   "GrenadeLauncher",
   "AK",
@@ -62,8 +75,43 @@ export const TCPCharacterController = ({
 }) => {
   const selectedMode = useSelector((state) => state.authslice.selectedMode);
   const isKnifeFight = selectedMode === "Knife Fight";
-  const [weapon, setWeapon] = useState(isKnifeFight ? "Knife_1" : "AK");
-  const [weaponIndex, setWeaponIndex] = useState(isKnifeFight ? 2 : 1);
+
+  // Persistent Equipment Initialization
+  const [weapon, setWeapon] = useState("AK");
+  const [weaponIndex, setWeaponIndex] = useState(1);
+  const [charColor, setCharColor] = useState("#4ade80");
+
+  // Helper to get character color from name
+  const getCharacterColor = (name) => {
+    const char = itemsData.CHARACTERS.find(c => c.name === name);
+    return char ? char.color : "#4ade80";
+  };
+
+  useEffect(() => {
+    const storedEquipped = localStorage.getItem("stark_equipped");
+    if (storedEquipped) {
+      const gear = JSON.parse(storedEquipped);
+
+      // Load Weapon
+      const initialWeapon = isKnifeFight ? "Knife_1" : gear.WEAPONS;
+      const initialIdx = WEAPONS.indexOf(initialWeapon);
+      setWeapon(initialWeapon);
+      setWeaponIndex(initialIdx !== -1 ? initialIdx : (isKnifeFight ? 2 : 1));
+
+      // Load Character Color Locally
+      setCharColor(getCharacterColor(gear.CHARACTERS));
+
+      // Sync to network profile
+      if (userPlayer) {
+        state.setState("profile", {
+          char: gear.CHARACTERS,
+          weapon: initialWeapon,
+          color: getCharacterColor(gear.CHARACTERS)
+        });
+      }
+    }
+  }, [isKnifeFight, userPlayer]);
+
   const group = useRef();
   const character = useRef();
   const rigidbody = useRef();
@@ -455,9 +503,9 @@ export const TCPCharacterController = ({
         <PlayerInfo state={state.state} />
         <group ref={character}>
           <CharacterSoldier
-            color={state.state.profile?.color}
+            color={state.state.profile?.color || charColor}
             animation={animation}
-            weapon={weapon}
+            weapon={state.state.weapon || weapon}
           />
           {userPlayer && (
             <Crosshair

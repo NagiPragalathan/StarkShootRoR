@@ -52,7 +52,7 @@ export function CharacterSoldier({
     actions[animation].reset().fadeIn(0.2).play();
     return () => actions[animation]?.fadeOut(0.2);
   }, [animation]);
-  localStorage.setItem("myData", "true");
+
   const playerColorMaterial = useMemo(
     () =>
       new MeshStandardMaterial({
@@ -60,36 +60,29 @@ export function CharacterSoldier({
       }),
     [color]
   );
-
   useEffect(() => {
     // HIDING NON-SELECTED WEAPONS
     WEAPONS.forEach((wp) => {
       const isCurrentWeapon = wp === weapon;
-      nodes[wp].visible = isCurrentWeapon;
-      console.log(isCurrentWeapon, "working... change wepon");
+      if (nodes[wp]) nodes[wp].visible = isCurrentWeapon;
     });
 
     // ASSIGNING CHARACTER COLOR
-    nodes.Body.traverse((child) => {
-      if (child.isMesh && child.material.name === "Character_Main") {
+    const isFullBlack = color === "#000000" || color === "black";
+    clone.traverse((child) => {
+      // Apply to main body parts (Character_Main material)
+      if (child.isMesh && (child.material.name === "Character_Main" || child.name.includes("Cube004_2") || child.name.includes("Cube004_3"))) {
         child.material = playerColorMaterial;
       }
+
+      // If Full Black mode is active, apply the black material to the skin and other meshes as well
+      if (isFullBlack && child.isMesh && (child.material.name === "Skin" || child.name.includes("Cube004"))) {
+        child.material = playerColorMaterial;
+      }
+
       if (child.isMesh) {
         child.castShadow = true;
         child.receiveShadow = true;
-      }
-    });
-    nodes.Head.traverse((child) => {
-      if (child.isMesh && child.material.name === "Character_Main") {
-        child.material = playerColorMaterial;
-      }
-    });
-    clone.traverse((child) => {
-      if (child.isMesh && child.material.name === "Character_Main") {
-        child.material = playerColorMaterial;
-      }
-      if (child.isMesh) {
-        child.castShadow = true;
       }
     });
   }, [weapon, nodes, clone, playerColorMaterial]);

@@ -56,6 +56,19 @@ export const Experience = ({ downgradedPerformance = false }) => {
       state.setState("health", 100);
       state.setState("deaths", 0);
       state.setState("kills", 0);
+
+      // Initialize player profile from local storage for the local player
+      if (state.id === myPlayer()?.id) {
+        const storedEquipped = localStorage.getItem("stark_equipped");
+        if (storedEquipped) {
+          const gear = JSON.parse(storedEquipped);
+          state.setState("profile", {
+            char: gear.CHARACTERS,
+            weapon: gear.WEAPONS
+          });
+        }
+      }
+
       setPlayers((players) => [...players, newPlayer]);
       state.onQuit(() => {
         setPlayers((players) => players.filter((p) => p.state.id !== state.id));
