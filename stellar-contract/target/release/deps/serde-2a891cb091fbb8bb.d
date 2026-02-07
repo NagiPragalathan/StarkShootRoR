@@ -1,0 +1,14 @@
+/Users/kiran/Desktop/StarkShootRoR/stellar-contract/target/release/deps/serde-2a891cb091fbb8bb.d: /Users/kiran/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/lib.rs /Users/kiran/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/integer128.rs /Users/kiran/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/mod.rs /Users/kiran/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/de.rs /Users/kiran/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/ser.rs /Users/kiran/Desktop/StarkShootRoR/stellar-contract/target/release/build/serde-b9120ae4b59a449b/out/private.rs
+
+/Users/kiran/Desktop/StarkShootRoR/stellar-contract/target/release/deps/libserde-2a891cb091fbb8bb.rlib: /Users/kiran/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/lib.rs /Users/kiran/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/integer128.rs /Users/kiran/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/mod.rs /Users/kiran/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/de.rs /Users/kiran/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/ser.rs /Users/kiran/Desktop/StarkShootRoR/stellar-contract/target/release/build/serde-b9120ae4b59a449b/out/private.rs
+
+/Users/kiran/Desktop/StarkShootRoR/stellar-contract/target/release/deps/libserde-2a891cb091fbb8bb.rmeta: /Users/kiran/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/lib.rs /Users/kiran/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/integer128.rs /Users/kiran/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/mod.rs /Users/kiran/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/de.rs /Users/kiran/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/ser.rs /Users/kiran/Desktop/StarkShootRoR/stellar-contract/target/release/build/serde-b9120ae4b59a449b/out/private.rs
+
+/Users/kiran/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/lib.rs:
+/Users/kiran/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/integer128.rs:
+/Users/kiran/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/mod.rs:
+/Users/kiran/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/de.rs:
+/Users/kiran/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/ser.rs:
+/Users/kiran/Desktop/StarkShootRoR/stellar-contract/target/release/build/serde-b9120ae4b59a449b/out/private.rs:
+
+# env-dep:OUT_DIR=/Users/kiran/Desktop/StarkShootRoR/stellar-contract/target/release/build/serde-b9120ae4b59a449b/out

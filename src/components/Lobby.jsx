@@ -70,179 +70,174 @@ const Lobby = () => {
   };
 
   return (
-    <div className="bg-[url('./assets/bg.svg')] min-h-screen bg-no-repeat bg-cover relative">
-      {/* {loading && (
-        <div className="absolute inset-0 bg-gray-900 bg-opacity-75 flex justify-center items-center z-50">
-          <DotLoader color="#B9FF09" />
-        </div>
-      )} */}
+    <div className="min-h-screen bg-no-repeat bg-center relative" style={{backgroundImage: "url('/homescreen_stellar_strike.png')", backgroundSize: "cover", backgroundPosition: "center center"}}>
+      {/* Screen Vignette */}
+      <div className="screen-vignette"></div>
 
-      <div className="flex justify-between w-full px-20 py-8">
-        <div className="flex items-center space-x-11 text-white text-xl">
-          <div className="flex homeprofilebg px-3 py-2 items-center space-x-3">
-            <img
-              src="https://blogger.googleusercontent.com/img/a/AVvXsEilxD0f-Y5qYnr3AA8xT_tvMlR7ru7Yl1zxozlEzg-C5oJqOStwAR8OxsgItoWC112TQTgCt4_xylJDmr4v_Z_A3MDUy22L6CAI_Cvw_FnicYCcoXScwCt41T-xiWNZ8JQJyfbXNdygsgY9TxXvH-Yqdg0vqpeMrakh78RxXj5BAT4XwW1a3KsQVhexzog"
-              className="h-12 w-auto"
-              alt=""
-            />
-            <p>prashantexe LVL 1</p>
+      {/* Top Resource Bar */}
+      <div className="resource-bar flex justify-between items-center w-full px-8 py-4 relative z-10">
+        {/* Profile Tactical ID - Top Left */}
+        <div className="flex homeprofilebg px-6 py-3 items-center space-x-4">
+          <img
+            src="https://blogger.googleusercontent.com/img/a/AVvXsEilxD0f-Y5qYnr3AA8xT_tvMlR7ru7Yl1zxozlEzg-C5oJqOStwAR8OxsgItoWC112TQTgCt4_xylJDmr4v_Z_A3MDUy22L6CAI_Cvw_FnicYCcoXScwCt41T-xiWNZ8JQJyfbXNdygsgY9TxXvH-Yqdg0vqpeMrakh78RxXj5BAT4XwW1a3KsQVhexzog"
+            className="h-14 w-auto profile-avatar"
+            alt=""
+          />
+          <div className="flex flex-col">
+            <div className="flex items-center space-x-2">
+              <p className="font-bold text-white text-lg tracking-wide">PRASHANTEXE</p>
+              <div className="rank-badge">1</div>
+            </div>
+            <div className="flex items-center space-x-2">
+              <div className="h-1.5 w-24 bg-black/50 rounded-full overflow-hidden">
+                <div className="h-full w-1/3 bg-gradient-to-r from-#A3FF12 to-#00E5FF"></div>
+              </div>
+              <p className="text-xs text-[#00E5FF] font-semibold">LVL 1</p>
+            </div>
           </div>
-          <div className="flex items-center space-x-2">
+        </div>
+
+        {/* Currency Displays */}
+        <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-2 currency-display">
             <img
               src="https://blogger.googleusercontent.com/img/a/AVvXsEispplhVXS52zWgstszpWTDQTrJ7FpVpnN4YjBilPRJ0hmtf0FGRI1-JoXko1x1mIG4Gi7ADUF3Yl9lu5JlsLRFnGUcPJnJzStlHom3K63Wu2QcL-nsJoMq2V66FcenoK7MbQVn_9vg1_8E1Q25wDoQJb2AGKiq4JGDYyknSKoXzYQFFR8LEhpX-R13ad4"
               alt=""
-              className="h-8 w-auto"
+              className="h-6 w-auto"
             />
-            <p>100</p>
+            <p className="font-bold text-[#FFD27F] text-lg">100</p>
           </div>
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-2 currency-display">
             <img
               src="https://blogger.googleusercontent.com/img/a/AVvXsEie2DZwyszxtLdkqYknRhqV0hDa85fb4knhn16GCCa3HO6AB_BHA19-BnWKl5qzuE8oOJ_WVifNg1FdY05UTucSiz36llzpSqUBjYbOriIDtaQV9iLJe0eMs455RVi3wkImTId7l0BqdOamXFulz7jivdeEiXqlhfItGYU-7iDuUgSBWA1PweMDY341yFM"
               alt=""
-              className="h-8 w-auto"
+              className="h-6 w-auto"
             />
-            <p>20</p>
+            <p className="font-bold text-[#00E5FF] text-lg">20</p>
           </div>
         </div>
       </div>
-      <div className="flex text-white text-2xl font-semibold justify-between mx-20">
-        <div>
-          <div className="homebox mt-20 px-16 py-10">
-            <div className="flex items-center space-x-5">
+
+      <div className="flex text-white text-xl font-semibold justify-between mx-8 relative z-10">
+        {/* Left Wing Navigation Stack */}
+        <div className="mt-12">
+          <div className="homebox px-12 py-8">
+            <div className="flex items-center space-x-4 menu-tab group cursor-pointer mb-8">
               <img
                 src="https://blogger.googleusercontent.com/img/a/AVvXsEhwze50sr7c42qWHWl1ZtWP-h91tRw96mnDxbST2rhMGENwxAH4LRxTWod417CEaB4xQfPVZ-0-kB1XCD2BDn1hwqxTPxNK6Z_Dz8F7Fo8hDjazJX_zXr458VZUPjdzdih1xheqz4yJg7oXTEQizG8q-8vC2B69RhKN4WOO6XS0AvvMhgGSGkq64aSJ3dQ"
                 alt=""
-                className="h-8 w-auto"
+                className="h-7 w-auto menu-icon"
               />
-              <p>
-                <Link className="text-white" href="/optstore">
-                  Store
-                </Link>
-              </p>
+              <Link className="text-white hover:text-[#A3FF12] transition-all font-semibold tracking-wider" href="/optstore">
+                STORE
+              </Link>
             </div>
-            <div className="flex items-center my-10 space-x-5">
+            <div className="flex items-center space-x-4 menu-tab group cursor-pointer mb-8">
               <img
                 src="https://blogger.googleusercontent.com/img/a/AVvXsEgn6Znvl2a2HObGhEoqPyeJymSTwEqIxV8f7IIQK3sCnu7oyYtZCkSg4XB-SRkV7NaxN7OVjliWj7gsOcc9VFmULUPaex4K3A1oEWf6wNsLfa8y9CcwLEdA52Dh-Hl2OnevhWJVJlI7CAMUpnWT97KEO42TfPhAxgHi7umyV4vGcVoO_XTnyxpNyJasnPg"
                 alt=""
-                className="h-8 w-auto"
+                className="h-7 w-auto menu-icon"
               />
-              <p>
-                <Link className="text-white" href="/optstore">
-                  LuckRoyale
-                </Link>
-              </p>
+              <Link className="text-white hover:text-[#A3FF12] transition-all font-semibold tracking-wider" href="/optstore">
+                LUCKROYALE
+              </Link>
             </div>
-            <div className="flex items-center space-x-5">
+            <div className="flex items-center space-x-4 menu-tab group cursor-pointer">
               <img
                 src="https://blogger.googleusercontent.com/img/a/AVvXsEj9mP_S5zrE05iA7nZDHHKPCR4xSdtSRPtzr9tu1TMRYbTkG9wNiCq_Ri20Nna07x-B775iuyjcJBplvhELJglNv426Q-hq-SVkXOhxSDrBLoROEbIAxMzxcUSWOaNF5lpgFBf35PUWkcEoyFN-rhZnwh9o4Q8ply2YLZrxTbmzr_zobAF7jEPIIunNH9s"
                 alt=""
-                className="h-8 w-auto"
+                className="h-7 w-auto menu-icon"
               />
-              <p>
-                <Link className="text-white" href="/Guns">
-                  Vault
-                </Link>
-              </p>
+              <Link className="text-white hover:text-[#A3FF12] transition-all font-semibold tracking-wider" href="/Guns">
+                VAULT
+              </Link>
             </div>
           </div>
         </div>
+
+        {/* Center Character Display */}
         <div className="root2">
-          <Canvas camera={{ fov: 75, position: [0, 1, 5] }} shadows>
+          <Canvas camera={{ fov: 75, position: [0, 0, 4] }} shadows>
             <Suspense fallback={null}>
               <directionalLight position={[3.3, 1.0, 4.4]} castShadow />
-              <primitive object={gltf.scene} position={[0, 1, 0]} castShadow />
-              <OrbitControls target={[0, 1, 0]} />
+              <primitive object={gltf.scene} position={[0, -3.0, 0]} scale={1.0} castShadow />
+              <OrbitControls target={[0, -1.2, 0]} enableZoom={false} />
             </Suspense>
           </Canvas>
         </div>
-        <div className="mt-48">
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              alignContent: "center",
-              justifyContent: "center",
-              alignItems: "center",
-            }}
-          >
-            <div className="flex mapbox px-6 py-3 w-72 items-center space-x-5">
-              <img
-                src="https://blogger.googleusercontent.com/img/a/AVvXsEhJ85zCrUSpRV7cSOt5Y1VeibTq8106ipzp_Ow_LZxxFvl2BDdUTpR0N5LVWnfhcA8DjymoCzOOgAl_3P4kpI9QXB2MJBEm6DP1n6kbleCpf_8IY_uaucIZpKyAwZjNJd9XzG2GRbyyqMhX5FKrNeKg1UAj0WLoxEA8b9hKg-eXqJi7IralLJYl8fnj2Uk"
-                alt=""
-                className="h-8 w-auto"
-              />
-              <p>Select Map</p>
-            </div>
-            <div>
-              <img
-                src={mapPaths[mapIndex]}
-                className={`h-40 w-auto ${
-                  mapIndex !== 0 ? "mx-auto blur-sm" : ""
-                }`}
-                alt=""
-              />
 
-              <div
-                className="bg-black"
-                style={{
-                  display: "flex",
-                  flexDirection: "row-reverse",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  flexWrap: "nowrap",
-                }}
-              >
-                <button className="px-2 bg-[#2f2f2f]" onClick={rightClick}>
-                  {">"}
+        {/* Right Side - Map Selector & Action Corner */}
+        <div className="mt-12">
+          <div className="flex flex-col items-center space-y-6">
+            {/* Holographic Map Selector */}
+            <div className="mapbox px-8 py-4 w-96">
+              <div className="flex items-center justify-center space-x-3 mb-4">
+                <img
+                  src="https://blogger.googleusercontent.com/img/a/AVvXsEhJ85zCrUSpRV7cSOt5Y1VeibTq8106ipzp_Ow_LZxxFvl2BDdUTpR0N5LVWnfhcA8DjymoCzOOgAl_3P4kpI9QXB2MJBEm6DP1n6kbleCpf_8IY_uaucIZpKyAwZjNJd9XzG2GRbyyqMhX5FKrNeKg1UAj0WLoxEA8b9hKg-eXqJi7IralLJYl8fnj2Uk"
+                  alt=""
+                  className="h-6 w-auto"
+                  style={{filter: 'drop-shadow(0 0 10px rgba(0, 229, 255, 0.8))'}}
+                />
+                <p className="text-base">SELECT MAP</p>
+              </div>
+
+              {/* Map Preview with Scanlines */}
+              <div className="map-preview mb-4">
+                <img
+                  src={mapPaths[mapIndex]}
+                  className={`h-44 w-auto ${mapIndex !== 0 ? "blur-sm" : ""}`}
+                  alt=""
+                />
+              </div>
+
+              {/* Navigation Controls */}
+              <div className="flex items-center justify-between gap-3 mb-4">
+                <button className="nav-chevron px-6 py-2" onClick={leftClick}>
+                  &lt;
                 </button>
-                <p className="text-center bg-opacity-40 py-2 ">
+                <div className="map-name flex-1 text-center px-4 py-2 text-base">
                   {mapNames[mapIndex]}
-                </p>
-                <button className="px-2 bg-[#2f2f2f]" onClick={leftClick}>
-                  {"<"}
+                </div>
+                <button className="nav-chevron px-6 py-2" onClick={rightClick}>
+                  &gt;
+                </button>
+              </div>
+
+              {/* Time Selection Pills */}
+              <div className="flex justify-between gap-2">
+                <button
+                  onClick={() => setGameTime(60, 1)}
+                  className={`time-btn px-5 py-2.5 text-sm flex-1 ${
+                    activeButton === 1 ? "time-btn-active" : ""
+                  }`}
+                >
+                  1 MIN
+                </button>
+                <button
+                  onClick={() => setGameTime(300, 2)}
+                  className={`time-btn px-5 py-2.5 text-sm flex-1 ${
+                    activeButton === 2 ? "time-btn-active" : ""
+                  }`}
+                >
+                  5 MIN
+                </button>
+                <button
+                  onClick={() => setGameTime(600, 3)}
+                  className={`time-btn px-5 py-2.5 text-sm flex-1 ${
+                    activeButton === 3 ? "time-btn-active" : ""
+                  }`}
+                >
+                  10 MIN
                 </button>
               </div>
             </div>
-          </div>
 
-          <div className="flex justify-between mx-2 items-center mt-3">
-            <button
-              onClick={() => setGameTime(60, 1)}
-              className={`px-3 text-lg py-1 border border-[#9FC610] rounded-xl ${
-                activeButton === 1
-                  ? "bg-[#9FC610] text-black"
-                  : "text-[#9FC610] hover:bg-[#9FC610] hover:text-black"
-              }`}
-            >
-              1 min
-            </button>
-            <button
-              onClick={() => setGameTime(300, 2)}
-              className={`px-3 text-lg py-1 border border-[#9FC610] rounded-xl ${
-                activeButton === 2
-                  ? "bg-[#9FC610] text-black"
-                  : "text-[#9FC610] hover:bg-[#9FC610] hover:text-black"
-              }`}
-            >
-              5 min
-            </button>
-            <button
-              onClick={() => setGameTime(600, 3)}
-              className={`px-3 text-lg py-1 border border-[#9FC610] rounded-xl ${
-                activeButton === 3
-                  ? "bg-[#9FC610] text-black"
-                  : "text-[#9FC610] hover:bg-[#9FC610] hover:text-black"
-              }`}
-            >
-              10 min
-            </button>
-          </div>
-          <div className="flex justify-center">
+            {/* Ultimate Play Button - Action Corner */}
             <Link
-              className="playbtm px-10 font-semibold py-2 mt-5 text-xl text-black"
+              className="playbtm px-16 py-4 text-center block w-full"
               href="/game"
             >
-              Play
+              START BATTLE
             </Link>
           </div>
         </div>
