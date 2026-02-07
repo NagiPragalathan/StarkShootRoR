@@ -1,4 +1,4 @@
-import React, { useState, useEffect, startTransition, Suspense } from "react";
+import React, { useState, useEffect, useRef, startTransition, Suspense } from "react";
 import { OrbitControls, ContactShadows } from "@react-three/drei";
 import { Canvas, useLoader } from "@react-three/fiber";
 import { Link } from "react-router-dom";
@@ -13,10 +13,35 @@ import { CharacterSoldier } from "./CharacterSoldier";
 const mapPaths = [
   "./bermuda.svg",
   "https://blogger.googleusercontent.com/img/a/AVvXsEiIDKYobYMAxdl5gAtBoE7B8P9G8iB0AYJUfiA0kR0NubthcLBo_LyYjsajGpA0jr6B1mCVB0lG5ZhMnhFYjNtbY5CiE6PJYmlXaAv5-TZ9GFJjnNZhLCulC76CPvjJfPmfIq3_5bvh0U7N7g784SznhnU5qS_uaRzeL2RsDlx39RboomQP1eg_MmahpNY",
+  "/textures/anime_art_style_a_water_based_pokemon_like_environ.jpg",
+  "/textures/anime_art_style_cactus_forest.jpg",
+  "/textures/anime_art_style_lava_world.jpg",
   "https://blogger.googleusercontent.com/img/a/AVvXsEgHxU-HB-lQ9ifrEy-ymcHR6aeTkwzBaOsIQ6SXinjXyVVmqCbtY44ZraIGYM86B6DT7vk3jDrQSbdJn61D6jZB3HX3aRSc7EIYnSStvJmZefxCOpcKRZVFqha7jg0dd4i-0qZN-87FqviZbUY3oODu3bvJZK9ytVKnLRYcgFpo9hz4JzK25BmQS5c9TMI",
+  "https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&q=80&w=800",
+  "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&q=80&w=800",
 ];
 
-const mapNames = ["Bermuda", "Pochinki", "Upcoming..."];
+const mapNames = [
+  "bermuda",
+  "pochinki",
+  "knife fight map",
+  "free arena",
+  "city side map",
+  "living room",
+  "grave house map",
+  "broken house map"
+];
+
+const mapModels = [
+  "",
+  "",
+  "models/knife_fight_map.glb",
+  "models/map.glb",
+  "models/city_side_map.glb",
+  "models/living_room.glb",
+  "models/grave_house_map.glb",
+  "models/broken_house_map.glb"
+];
 
 const Lobby = () => {
   const dispatch = useDispatch();
@@ -29,6 +54,21 @@ const Lobby = () => {
   const [username, setUsername] = useState("");
   const [isRegistering, setIsRegistering] = useState(false);
   const [activeButton, setActiveButton] = useState(null);
+  const videoRef = useRef(null);
+
+  // Auto-play audio handling for browser policies
+  useEffect(() => {
+    const handleInteraction = () => {
+      if (videoRef.current) {
+        videoRef.current.play().catch(e => console.log("Audio play blocked", e));
+        videoRef.current.muted = false;
+      }
+      window.removeEventListener('click', handleInteraction);
+    };
+
+    window.addEventListener('click', handleInteraction);
+    return () => window.removeEventListener('click', handleInteraction);
+  }, []);
 
   // Load initial map selection from localStorage
   useEffect(() => {
@@ -84,8 +124,8 @@ const Lobby = () => {
     <div className="h-screen w-screen relative overflow-hidden font-sans select-none">
       {/* Dynamic Video Background */}
       <video
+        ref={videoRef}
         autoPlay
-        muted
         loop
         playsInline
         className="absolute inset-0 w-full h-full object-cover"
@@ -131,9 +171,12 @@ const Lobby = () => {
           <div className="homeprofilebg flex items-center p-1 pr-8 space-x-6 pointer-events-auto">
             <div className="relative group">
               <img
-                src="https://blogger.googleusercontent.com/img/a/AVvXsEilxD0f-Y5qYnr3AA8xT_tvMlR7ru7Yl1zxozlEzg-C5oJqOStwAR8OxsgItoWC112TQTgCt4_xylJDmr4v_Z_A3MDUy22L6CAI_Cvw_FnicYCcoXScnCt41T-xiWNZ8JQJyfbXNdygsgY9TxXvH-Yqdg0vqpeMrakh78RxXj5BAT4XwW1a3KsQVhexzog"
-                className="h-20 w-20 profile-avatar object-cover grayscale group-hover:grayscale-0 transition-all duration-500"
+                src="https://raw.githubusercontent.com/Prashant-v-s/StarkShootRoR/main/public/soldier_head.png"
+                className="h-20 w-20 profile-avatar object-cover group-hover:scale-110 transition-all duration-500 rounded-none border border-lime/20"
                 alt="Avatar"
+                onError={(e) => {
+                  e.target.src = "https://blogger.googleusercontent.com/img/a/AVvXsEilxD0f-Y5qYnr3AA8xT_tvMlR7ru7Yl1zxozlEzg-C5oJqOStwAR8OxsgItoWC112TQTgCt4_xylJDmr4v_Z_A3MDUy22L6CAI_Cvw_FnicYCcoXScnCt41T-xiWNZ8JQJyfbXNdygsgY9TxXvH-Yqdg0vqpeMrakh78RxXj5BAT4XwW1a3KsQVhexzog";
+                }}
               />
               <div className="absolute -bottom-2 -right-4 rank-badge">LV 01</div>
             </div>
@@ -165,22 +208,40 @@ const Lobby = () => {
 
         <div className="flex-grow flex justify-between items-center px-12 pb-12">
           {/* Left Panel: Tactical Suite */}
-          <div className="homebox flex flex-col space-y-10 w-96 relative pointer-events-auto">
+          <div className="homebox flex flex-col space-y-6 w-80 relative pointer-events-auto">
             <div className="space-y-4">
               <div className="flex items-center space-x-3 mb-8">
                 <div className="h-4 w-1 bg-lime shadow-[0_0_10px_#A3FF12]"></div>
                 <div className="text-[10px] text-white/50 font-black tracking-[0.5em] uppercase">Tactical Suite</div>
               </div>
 
-              {["BATTLE PASS", "QUARTERMASTER", "NEON ROYALE", "ARMORY"].map((item, i) => (
+              {[
+                { name: "BATTLE PASS", id: "01", sub: "ELITE PROGRESSION" },
+                { name: "QUARTERMASTER", id: "02", sub: "EQUIPMENT LOGISTICS" },
+                { name: "NEON ROYALE", id: "03", sub: "EVENT REWARDS" },
+                { name: "ARMORY", id: "04", sub: "WEAPON SYSTEMS" }
+              ].map((item, i) => (
                 <Link
-                  key={item}
-                  to={item === "ARMORY" ? "/Guns" : "/optstore"}
+                  key={item.name}
+                  to={item.name === "ARMORY" ? "/Guns" : "/optstore"}
                   className="menu-tab block group relative"
                 >
-                  <div className="flex items-center justify-between">
-                    <div className="text-white font-black text-2xl tracking-widest transition-all duration-300">
-                      {item}
+                  <div className="flex items-center justify-between pointer-events-none">
+                    <div className="flex flex-col">
+                      <div className="text-[10px] text-lime/40 font-black tracking-[0.3em] mb-1 group-hover:text-lime transition-colors">
+                        PROTOCOL {item.id}
+                      </div>
+                      <div className="text-white font-black text-2xl tracking-[0.15em] transition-all duration-300 group-hover:translate-x-2">
+                        {item.name}
+                      </div>
+                      <div className="text-[9px] text-white/20 font-bold tracking-widest mt-1 group-hover:text-white/40 transition-colors">
+                        {item.sub}
+                      </div>
+                    </div>
+                    <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                      <div className="w-8 h-8 rounded-full border border-lime/30 flex items-center justify-center">
+                        <div className="w-1.5 h-1.5 bg-lime rounded-full animate-ping"></div>
+                      </div>
                     </div>
                   </div>
                 </Link>
@@ -199,24 +260,51 @@ const Lobby = () => {
 
 
           {/* Right: Combat Control Panel */}
-          <div className="flex flex-col space-y-6 w-96 pointer-events-auto">
-            <div className="mapbox p-5 space-y-5">
+          <div className="flex flex-col space-y-4 w-96 pointer-events-auto">
+            {/* Data Suite: Quick Access */}
+            <div className="mapbox p-4 grid grid-cols-2 gap-3">
+              {[
+                { name: "STORE", icon: "🛒", path: "/optstore", sub: "MARKET" },
+                { name: "CHAT AI", icon: "🤖", path: "/chat", sub: "COMMAND" },
+                { name: "LEADERBOARD", icon: "🏆", path: "/leaderboard", sub: "RANKING" },
+                { name: "EVENT", icon: "🔥", path: "/optstore", sub: "LIVE" }
+              ].map((item) => (
+                <Link
+                  key={item.name}
+                  to={item.path}
+                  className="relative group overflow-hidden bg-white/5 border border-white/5 p-3 hover:bg-lime/10 transition-all duration-300"
+                  style={{ clipPath: 'polygon(0 0, 100% 0, 90% 100%, 0 100%)' }}
+                >
+                  <div className="flex items-start justify-between">
+                    <div className="space-y-0.5">
+                      <div className="text-[7px] text-lime font-black tracking-widest opacity-50 group-hover:opacity-100">DATA_HUB</div>
+                      <div className="text-xs font-black text-white group-hover:text-lime">{item.name}</div>
+                      <div className="text-[6px] text-white/20 font-bold uppercase">{item.sub}</div>
+                    </div>
+                    <span className="text-xs opacity-30 group-hover:opacity-100 group-hover:scale-110 transition-all">{item.icon}</span>
+                  </div>
+                  <div className="absolute bottom-0 right-0 w-8 h-0.5 bg-lime/0 group-hover:bg-lime transition-all"></div>
+                </Link>
+              ))}
+            </div>
+
+            <div className="mapbox p-5 space-y-4">
               {/* Map Reveal */}
               <div className="space-y-3">
                 <div className="flex justify-between items-center">
                   <span className="text-[10px] text-white/30 font-black tracking-widest">MAP SELECTION</span>
-                  <span className="text-[10px] text-cyan font-bold tabular-nums">0{mapIndex + 1} / 03</span>
+                  <span className="text-[10px] text-cyan font-bold tabular-nums">0{mapIndex + 1} / 0{mapNames.length}</span>
                 </div>
                 <div className="map-preview group relative h-36 overflow-hidden">
                   <img
                     src={mapPaths[mapIndex]}
-                    className={`h-full w-full object-cover transition-all duration-[2s] group-hover:scale-125 ${mapIndex !== 0 ? "grayscale brightness-50" : ""}`}
+                    className="h-full w-full object-cover transition-all duration-[2s] group-hover:scale-125"
                     alt="Map"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
                   <div className="absolute bottom-3 left-6">
                     <h2 className="text-2xl font-black text-white italic tracking-tighter uppercase">{mapNames[mapIndex]}</h2>
-                    {mapIndex !== 0 && <span className="text-[9px] text-red-500 font-bold tracking-widest">DEPLOYMENT UNAVAILABLE</span>}
+                    <span className="text-[9px] text-lime font-bold tracking-widest">READY FOR DEPLOYMENT</span>
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-2">
@@ -259,20 +347,29 @@ const Lobby = () => {
             </div>
 
             <Link
-              className="playbtm group relative flex items-center justify-center p-6 space-x-4"
+              className="playbtm group relative flex flex-col items-center justify-center p-6"
               to="/game"
             >
-              <span className="text-2xl font-black">START MISSION</span>
-              <svg className="w-6 h-6 transform group-hover:translate-x-2 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M13 5l7 7-7 7M5 5l7 7-7 7" />
-              </svg>
+              <div className="flex items-center space-x-4">
+                <span className="text-3xl font-black italic tracking-tighter">START MISSION</span>
+                <svg className="w-8 h-8 transform group-hover:translate-x-3 transition-all duration-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={4} d="M13 5l7 7-7 7M5 5l7 7-7 7" />
+                </svg>
+              </div>
+              <div className="absolute top-2 left-6 flex items-center space-x-1 uppercase text-[8px] font-bold opacity-40 group-hover:opacity-100 transition-opacity">
+                <span className="w-1.5 h-1.5 bg-black rounded-full animate-pulse"></span>
+                <span>System: Stable</span>
+                <span className="mx-2">|</span>
+                <span>Auth: Verified</span>
+              </div>
+              <div className="absolute bottom-1 right-8 text-[7px] font-black opacity-30 group-hover:opacity-60">
+                STARK-OS // V2.0.4
+              </div>
             </Link>
           </div>
         </div>
       </div>
 
-      {/* Toast Notification Positioned Bottom-Left for Modern Games */}
-      <ToastContainer position="bottom-left" theme="light" />
     </div>
   );
 };

@@ -23,6 +23,8 @@ import { EthereumWalletConnectors } from "@dynamic-labs/ethereum";
 
 import GunSelectionScreen from "./components/NewStore/GunSelectionScreen.jsx";
 import CharacterSelectionScreen from "./components/NewStore/CharacterSelectionScreen.jsx";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const huddleClient = new HuddleClient({
   projectId: "yn1GSFecK63Bm7pRiiuBuUUQQhWmpJM3",
@@ -71,7 +73,7 @@ ReactDOM.createRoot(document.getElementById("root")).render(
                 <Route path="/options" exact element={<Options />} />
                 <Route path="/optstore" exact element={<StoreOptions />} />
               </Routes>
-
+              <ToastContainer position="bottom-left" theme="dark" />
             </Router>
           </HuddleProvider>
         </PersistGate>
