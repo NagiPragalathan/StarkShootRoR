@@ -7,9 +7,9 @@ import { useSelector } from "react-redux";
 import { CharacterSoldier } from "./CharacterSoldier";
 import * as THREE from "three";
 
-const MOVEMENT_SPEED = 202;
+const MOVEMENT_SPEED = 215;
 const FIRE_RATE = 380;
-const JUMP_FORCE = 20;
+const JUMP_FORCE = 10;
 
 export const WEAPON_OFFSET = {
   x: -0.2,
@@ -477,6 +477,8 @@ export const TCPCharacterController = ({
     }
   }, [character.current]);
 
+  const [damageNumbers, setDamageNumbers] = useState([]);
+
   return (
     <group {...props} ref={group}>
       <RigidBody
@@ -490,12 +492,21 @@ export const TCPCharacterController = ({
             other.rigidBody.userData.type === "bullet" &&
             other.rigidBody.userData.player !== state.id
           ) {
-            const newHealth =
-              state.state.health - other.rigidBody.userData.damage;
+            const damage = other.rigidBody.userData.damage;
+            const newHealth = state.state.health - damage;
+
+            // Trigger floating damage number
+            const id = Date.now();
+            setDamageNumbers(prev => [...prev, { id, damage, timestamp: Date.now() }]);
+            setTimeout(() => {
+              setDamageNumbers(prev => prev.filter(num => num.id !== id));
+            }, 1000);
+
             if (newHealth <= 0) {
               state.setState("deaths", state.state.deaths + 1);
               state.setState("dead", true);
               state.setState("health", 0);
+              state.setState("killStreak", 0);
               rigidbody.current.setEnabled(false);
               setTimeout(() => {
                 spawnRandomly();
@@ -511,6 +522,13 @@ export const TCPCharacterController = ({
         }}
       >
         <PlayerInfo state={state.state} />
+        {damageNumbers.map(num => (
+          <Billboard key={num.id} position-y={3 + (Date.now() - num.timestamp) * 0.002}>
+            <Text fontSize={0.5} color="#FF3E55" font="/game.ttf">
+              -{num.damage}
+            </Text>
+          </Billboard>
+        ))}
         <group ref={character}>
           <CharacterSoldier
             color={state.state.profile?.color || charColor}
@@ -550,19 +568,29 @@ const PlayerInfo = ({ state }) => {
   const health = state.health;
   const name = state.profile.name;
   return (
-    <Billboard position-y={2.5}>
-      <Text position-y={0.36} fontSize={0.4}>
+    <Billboard position-y={2.6}>
+      <Text position-y={0.45} fontSize={0.3} font="/game.ttf">
         {name}
         <meshBasicMaterial color={state.profile.color} />
       </Text>
-      <mesh position-z={-0.1}>
-        <planeGeometry args={[1, 0.2]} />
-        <meshBasicMaterial color="black" transparent opacity={0.5} />
+
+      {/* Background Rail */}
+      <mesh position-y={0.1} position-z={-0.01}>
+        <planeGeometry args={[1.2, 0.15]} />
+        <meshBasicMaterial color="black" transparent opacity={0.6} />
       </mesh>
-      <mesh scale-x={health / 100} position-x={-0.5 * (1 - health / 100)}>
-        <planeGeometry args={[1, 0.2]} />
-        <meshBasicMaterial color="red" />
+
+      {/* Health Rail */}
+      <mesh scale-x={health / 100} position-x={-0.6 * (1 - health / 100)} position-y={0.1}>
+        <planeGeometry args={[1.2, 0.15]} />
+        <meshBasicMaterial color={health < 30 ? "#FF3E55" : "#A3FF12"} />
       </mesh>
+
+      {/* Percentage Readout */}
+      <Text position-y={0.1} position-z={0.02} fontSize={0.12} font="/game.ttf">
+        {Math.round(health)}%
+        <meshBasicMaterial color="white" />
+      </Text>
     </Billboard>
   );
 };

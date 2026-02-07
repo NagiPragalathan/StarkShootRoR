@@ -17,6 +17,7 @@ import { BulletHit } from "./BulletHit";
 import { CharacterController } from "./CharacterController";
 import { TCPCharacterController } from "./TCPCharacterController";
 import { Map } from "./Map";
+import { SkyBox } from "./SkyBox";
 
 export const Experience = ({ downgradedPerformance = false }) => {
   const [players, setPlayers] = useState([]);
@@ -64,6 +65,7 @@ export const Experience = ({ downgradedPerformance = false }) => {
       state.setState("health", 100);
       state.setState("deaths", 0);
       state.setState("kills", 0);
+      state.setState("killStreak", 0);
 
       // Initialize player profile from local storage for the local player
       if (state.id === myPlayer()?.id) {
@@ -182,7 +184,10 @@ export const Experience = ({ downgradedPerformance = false }) => {
 
   const onKilled = (_victim, killer) => {
     const killerState = players.find((p) => p.state.id === killer).state;
-    killerState.setState("kills", killerState.state.kills + 1);
+    const currentKills = killerState.getState("kills") || 0;
+    const currentStreak = killerState.getState("killStreak") || 0;
+    killerState.setState("kills", currentKills + 1);
+    killerState.setState("killStreak", currentStreak + 1);
   };
 
   return (
@@ -225,6 +230,7 @@ export const Experience = ({ downgradedPerformance = false }) => {
       {(isHost() ? hits : networkHits).map((hit) => (
         <BulletHit key={hit.id} {...hit} onEnded={() => onHitEnded(hit.id)} />
       ))}
+      <SkyBox />
       <Environment preset="sunset" />
     </>
   );

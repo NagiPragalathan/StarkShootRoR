@@ -13,6 +13,7 @@ const authslice = createSlice({
     address: "",
     soundEnabled: true,
     showMobileControls: false,
+    maxStreak: 0,
   },
   reducers: {
     setPlayerData: (state, action) => {
@@ -50,6 +51,11 @@ const authslice = createSlice({
     setShowMobileControls: (state, action) => {
       state.showMobileControls = action.payload;
     },
+    setMaxStreak: (state, action) => {
+      if (action.payload > state.maxStreak) {
+        state.maxStreak = action.payload;
+      }
+    },
   },
 });
 
@@ -63,6 +69,7 @@ export const {
   setAddress,
   setMode,
   setSoundEnabled,
-  setShowMobileControls
+  setShowMobileControls,
+  setMaxStreak,
 } = authslice.actions;
 export default authslice.reducer;

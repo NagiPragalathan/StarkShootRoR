@@ -526,3 +526,174 @@ body {
   filter: blur(10px);
   pointer-events: none;
 }
+
+/* --- NEW PREMIUM UI ADDITIONS --- */
+
+.glass-premium {
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid var(--border-subtle);
+  box-shadow:
+    0 8px 32px 0 rgba(0, 0, 0, 0.8),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+}
+
+.animate-shimmer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(to right, transparent 0%, rgba(255, 255, 255, 0.1) 50%, transparent 100%);
+  animation: shimmer-transform 2s infinite linear;
+}
+
+@keyframes shimmer-transform {
+  0% {
+    transform: translateX(-100%);
+  }
+
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.mission-clock-premium {
+  background: rgba(0, 0, 0, 0.6);
+  padding: 0.5rem 2rem;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-top: none;
+  clip-path: polygon(0 0, 100% 0, 90% 100%, 10% 100%);
+  position: relative;
+  text-align: center;
+}
+
+.mission-clock-premium::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 40%;
+  height: 2px;
+  background: var(--primary-glow);
+  box-shadow: 0 0 10px var(--primary-glow);
+}
+
+@keyframes streak-pop {
+  0% {
+    transform: scale(1);
+    filter: brightness(1);
+  }
+
+  50% {
+    transform: scale(1.1);
+    filter: brightness(1.3);
+    text-shadow: 0 0 8px var(--primary-glow);
+  }
+
+  100% {
+    transform: scale(1);
+    filter: brightness(1);
+  }
+}
+
+.animate-streak {
+  animation: streak-pop 0.8s infinite alternate ease-in-out;
+}
+
+/* --- STARK TECH DESIGN --- */
+
+.stark-hud-card {
+  background: linear-gradient(135deg, rgba(13, 14, 18, 0.9) 0%, rgba(20, 20, 25, 0.7) 100%);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
+  clip-path: polygon(0 0,
+      100% 0,
+      100% calc(100% - 15px),
+      calc(100% - 15px) 100%,
+      0 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+.stark-hud-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: var(--primary-glow);
+  opacity: 0.8;
+}
+
+.stark-hud-card.critical::before {
+  background: var(--accent-red);
+  box-shadow: 0 0 10px var(--accent-red);
+  animation: flash-red 1s infinite;
+}
+
+@keyframes flash-red {
+
+  0%,
+  100% {
+    opacity: 0.8;
+  }
+
+  50% {
+    opacity: 0.3;
+  }
+}
+
+.health-gradient {
+  background: linear-gradient(90deg, #a3ff12 0%, #7dbb0e 100%);
+  box-shadow: 0 0 15px rgba(163, 255, 18, 0.4);
+}
+
+.health-gradient.critical {
+  background: linear-gradient(90deg, #FF2644 0%, #cc001b 100%);
+  box-shadow: 0 0 20px rgba(255, 38, 68, 0.6);
+}
+
+.scanline-overlay {
+  background: repeating-linear-gradient(0deg,
+      transparent 0px,
+      transparent 2px,
+      rgba(0, 0, 0, 0.2) 3px);
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+
+@keyframes streak-title-intro {
+  0% {
+    transform: scale(3);
+    opacity: 0;
+    filter: blur(20px);
+  }
+
+  20% {
+    transform: scale(1);
+    opacity: 1;
+    filter: blur(0px);
+  }
+
+  40% {
+    transform: scale(1.1);
+    filter: brightness(1.5);
+  }
+
+  100% {
+    transform: scale(1);
+    filter: brightness(1);
+  }
+}
+
+.animate-streak-title {
+  animation: streak-title-intro 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
