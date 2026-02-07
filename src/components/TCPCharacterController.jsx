@@ -3,6 +3,7 @@ import { Billboard, Text } from "@react-three/drei";
 import { useFrame, useThree } from "@react-three/fiber";
 import { CapsuleCollider, RigidBody, vec3 } from "@react-three/rapier";
 import { myPlayer } from "playroomkit";
+import { useSelector } from "react-redux";
 import { CharacterSoldier } from "./CharacterSoldier";
 import * as THREE from "three";
 
@@ -59,8 +60,10 @@ export const TCPCharacterController = ({
   downgradedPerformance,
   ...props
 }) => {
-  const [weapon, setWeapon] = useState("AK");
-  const [weaponIndex, setWeaponIndex] = useState(1);
+  const selectedMode = useSelector((state) => state.authslice.selectedMode);
+  const isKnifeFight = selectedMode === "Knife Fight";
+  const [weapon, setWeapon] = useState(isKnifeFight ? "Knife_1" : "AK");
+  const [weaponIndex, setWeaponIndex] = useState(isKnifeFight ? 2 : 1);
   const group = useRef();
   const character = useRef();
   const rigidbody = useRef();
@@ -142,7 +145,9 @@ export const TCPCharacterController = ({
           setMovement((prev) => ({ ...prev, jump: true }));
           break;
         case "KeyQ":
-          setWeaponIndex((prev) => (prev + 1) % WEAPONS.length);
+          if (!isKnifeFight) {
+            setWeaponIndex((prev) => (prev + 1) % WEAPONS.length);
+          }
           break;
         default:
           break;
@@ -238,39 +243,43 @@ export const TCPCharacterController = ({
   }, [gl.domElement]);
 
   useFrame((_, delta) => {
-    const cameraOffset = new THREE.Vector3(0, 7, -15); // Default camera position (behind and above the character)
-    const sideOffset = new THREE.Vector3(5, 7, -10); // Offset to move camera to the side when close to objects
+    const isTPP = selectedMode === "TPP";
+    const cameraOffset = isTPP
+      ? new THREE.Vector3(-1.5, 3, -4) // Over the shoulder
+      : new THREE.Vector3(0, 7, -15); // Tactical distance
+
+    const sideOffset = new THREE.Vector3(5, 7, -10);
     const targetPosition = new THREE.Vector3();
-  
+
     if (character.current) {
       character.current.getWorldPosition(targetPosition);
-  
+
       // Apply camera rotation smoothly based on mouse movements
       const cameraRotatedOffset = cameraOffset.clone()
         .applyAxisAngle(new THREE.Vector3(1, 0, 0), cameraRotation.x)
         .applyAxisAngle(new THREE.Vector3(0, 1, 0), cameraRotation.y);
-  
+
       let desiredPosition = targetPosition.clone().add(cameraRotatedOffset);
-  
+
       // Ensure the camera remains above the character
       desiredPosition.y = Math.max(desiredPosition.y, targetPosition.y + 1);
-  
+
       // Check for collisions to adjust the camera position if necessary
       const raycaster = new THREE.Raycaster(targetPosition, cameraRotatedOffset.clone().normalize(), 0, cameraOffset.length());
       const intersects = raycaster.intersectObjects(scene.children, true);
-  
+
       if (intersects.length > 0) {
         // If there's a collision, move the camera to the side of the character instead of inside it
         const sideCameraOffset = sideOffset.clone()
           .applyAxisAngle(new THREE.Vector3(0, 1, 0), cameraRotation.y); // Keep the side offset relative to the camera's horizontal rotation
         desiredPosition = targetPosition.clone().add(sideCameraOffset);
       }
-  
+
       // Smoothly interpolate the camera's position to avoid abrupt movements
       camera.position.lerp(desiredPosition, 0.1);
       camera.lookAt(targetPosition); // Ensure the camera looks at the character's head
     }
-  
+
     if (state.state.dead) {
       setAnimation("Death");
       return;
@@ -288,7 +297,7 @@ export const TCPCharacterController = ({
       if (movement.right) return Math.PI / 2;
       return null;
     };
-  
+
     const applyMovement = (angle) => {
       // Adjust movement direction based on camera rotation
       const movementDirection = new THREE.Vector3(
@@ -296,7 +305,7 @@ export const TCPCharacterController = ({
         0,
         Math.cos(angle)
       ).applyAxisAngle(new THREE.Vector3(0, 1, 0), cameraRotation.y);
-  
+
       const impulse = {
         x: movementDirection.x * MOVEMENT_SPEED * delta,
         y: 0,
@@ -305,7 +314,7 @@ export const TCPCharacterController = ({
       rigidbody.current.applyImpulse(impulse, true);
       character.current.rotation.y = angle + cameraRotation.y;
     };
-  
+
     if (joystick.isJoystickPressed() && angle) {
       setAnimation("Run");
       applyMovement(angle);
@@ -318,10 +327,10 @@ export const TCPCharacterController = ({
         setAnimation("Idle");
       }
     }
-  
+
     const playerWorldPos = vec3(rigidbody.current.translation());
-  
-    if (joystick.isPressed("switch")) {
+
+    if (joystick.isPressed("switch") && !isKnifeFight) {
       if (!switchTimeout) {
         switchTimeout = setTimeout(() => {
           setWeaponIndex((prev) => (prev + 1) % WEAPONS.length);
@@ -329,7 +338,7 @@ export const TCPCharacterController = ({
         }, 200); // Adjust the timeout duration as needed
       }
     }
-  
+
     if ((joystick.isPressed("jump") || movement.jump) && playerWorldPos.y < 2) {
       setAnimation("Jump");
       const impulse = {
@@ -348,7 +357,7 @@ export const TCPCharacterController = ({
         rigidbody.current.applyImpulse(impulse, true);
       }
     }
-  
+
     // Check if fire button is pressed
     if (joystick.isPressed("fire") || movement.fire) {
       // fire
@@ -359,7 +368,7 @@ export const TCPCharacterController = ({
         lastShoot.current = Date.now();
         const bulletProps = BULLET_PROPERTIES[weapon] || {};
         const { damage = 10, speed = 1, size = 0.2, range = 100, spread = 0, bullets = 1 } = bulletProps;
-  
+
         for (let i = 0; i < bullets; i++) {
           const newBullet = {
             id: state.id + "-" + +new Date(),
@@ -375,7 +384,7 @@ export const TCPCharacterController = ({
         }
       }
     }
-  
+
     // Sync animation state across the network
     if (userPlayer) {
       state.setState("pos", rigidbody.current.translation());
@@ -387,7 +396,7 @@ export const TCPCharacterController = ({
       const rotY = state.getState("rotY");
       const networkAnimation = state.getState("animation");
       const networkWeapon = state.getState("weapon");  // Get the weapon state
-  
+
       if (pos) {
         rigidbody.current.setTranslation(pos);
       }
@@ -402,7 +411,7 @@ export const TCPCharacterController = ({
       }
     }
   });
-  
+
 
   useEffect(() => {
     if (character.current && userPlayer) {

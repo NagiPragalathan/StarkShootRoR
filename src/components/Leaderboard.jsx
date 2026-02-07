@@ -171,101 +171,109 @@ export const Leaderboard = () => {
 
   return (
     <>
-      <div className="fixed justify-between w-full  top-0 left-0 right-0 p-4 flex z-10 gap-4">
-        <div>
+      <div className="fixed w-full top-0 left-0 right-0 p-6 flex justify-between items-start z-10 pointer-events-none">
+        {/* Left Side: Player Roster */}
+        <div className="flex flex-col space-y-2 pointer-events-auto">
+          <div className="text-[10px] text-lime font-bold tracking-[0.3em] mb-2 opacity-60">SQUAD STATUS</div>
           {players.map((player) => (
             <div
               key={player.id}
-              className="bg-opacity-60 mapbox backdrop-blur-sm flex items-center rounded-lg gap-2 p-2 min-w-[140px]"
-              style={{}}
+              className="hud-card flex items-center p-2 pr-6 space-x-4 min-w-[200px]"
             >
-              <img
-                src={player.state.profile?.photo || ""}
-                className="w-10 h-10 border-2 rounded-full"
-                style={{
-                  borderColor: player.state.profile?.color,
-                }}
-              />
-              <div className="flex-grow">
-                <h2 className="font-bold text-sm">
+              <div className="relative">
+                <img
+                  src={player.state.profile?.photo || "https://api.dicebear.com/7.x/avataaars/svg?seed=fallback"}
+                  className="w-10 h-10 border-2 rounded-sm transform rotate-45"
+                  style={{
+                    borderColor: player.state.profile?.color,
+                    padding: '2px'
+                  }}
+                  alt={player.state.profile.name}
+                />
+              </div>
+
+              <div className="flex flex-col">
+                <h2 className="font-bold text-xs tracking-wider uppercase text-white/90">
                   {player.state.profile.name}
                 </h2>
-
-                <div className="flex text-sm items-center gap-4">
-                  <p>🔫 {player.state.kills}</p>
-                  <p>💀 {player.state.deaths}</p>
+                <div className="flex items-center space-x-3 mt-1">
+                  <div className="flex items-center space-x-1">
+                    <span className="text-[10px] text-lime font-bold">K</span>
+                    <span className="text-sm font-black text-white">{player.state.kills}</span>
+                  </div>
+                  <div className="h-2 w-[1px] bg-white/10"></div>
+                  <div className="flex items-center space-x-1">
+                    <span className="text-[10px] text-red-500 font-bold">D</span>
+                    <span className="text-sm font-black text-white">{player.state.deaths}</span>
+                  </div>
                 </div>
               </div>
             </div>
           ))}
         </div>
 
-        <div className="flex flex-col items-center">
-          <p
-            id="timer_con"
-            className="mt-8"
-            style={{
-              backgroundColor: "#75b0feab",
-              padding: "4px 11px",
-              borderRadius: "9px",
-              fontFamily: "cursive",
-              fontWeight: "bold",
-              border: "2px solid #2682fc",
-            }}
-          >
-            Time: {formatTime(timer ?? time ?? 60)}
-          </p>
+        {/* Center: Mission Clock */}
+        <div className="flex flex-col items-center pointer-events-auto">
+          <div className={`mission-clock ${timer < 60 ? 'critical' : ''}`}>
+            <span className="text-[10px] absolute -top-5 left-1/2 -translate-x-1/2 tracking-[0.4em] text-white/40 whitespace-nowrap">MISSION TIME</span>
+            {formatTime(timer ?? time ?? 60)}
+          </div>
         </div>
-        <div>
-          <div className="mt-4  grid gap-2 text-center lg:max-w-5xl lg:w-full lg:mb-0 lg:grid-cols-4 lg:text-left md:hidden">
+
+        {/* Right Side: Comms & Controls */}
+        <div className="flex flex-col items-end space-y-4 pointer-events-auto">
+          <div className="flex space-x-2">
+            {!muted ? (
+              <button
+                type="button"
+                className="bg-blue-600/80 hover:bg-blue-500 border border-blue-400/50 text-[10px] font-bold tracking-widest uppercase px-6 py-2 rounded-sm transition-all"
+                onClick={handleJoinRoom}
+              >
+                ENABLE COMMS
+              </button>
+            ) : (
+              <button
+                type="button"
+                className="bg-red-600/80 hover:bg-red-500 border border-red-400/50 text-[10px] font-bold tracking-widest uppercase px-6 py-2 rounded-sm transition-all"
+                onClick={handleExitRoom}
+              >
+                DISABLE COMMS
+              </button>
+            )}
+
+            <button
+              className="bg-white/5 hover:bg-white/20 border border-white/10 p-2 rounded-sm transition-all"
+              onClick={() => {
+                if (document.fullscreenElement) {
+                  document.exitFullscreen();
+                } else {
+                  document.documentElement.requestFullscreen();
+                }
+              }}
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth={2}
+                stroke="currentColor"
+                className="w-4 h-4"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75h-4.5m4.5 0v4.5m0-4.5L15 9m5.25 11.25h-4.5m4.5 0v-4.5m0 4.5L15 15"
+                />
+              </svg>
+            </button>
+          </div>
+
+          {/* Peer List View */}
+          <div className="grid gap-2 text-right">
             {peerIds.map((peerId) =>
               peerId ? <RemotePeer key={peerId} peerId={peerId} /> : null
             )}
           </div>
-          {!muted && (
-            <button
-              type="button"
-              className="absolute rounded-xl mr-10  py-3 px-5 mt-5 text-white bg-blue-600 right-10"
-              onClick={handleJoinRoom}
-            >
-              Unmute{" "}
-            </button>
-          )}
-
-          {muted && (
-            <button
-              type="button"
-              className="absolute rounded-full border py-3 px-10 mt-5 text-white mapbox right-20"
-              onClick={handleExitRoom}
-            >
-              Mute{" "}
-            </button>
-          )}
-          <button
-            className="fixed top-4 right-4 z-10 text-white"
-            onClick={() => {
-              if (document.fullscreenElement) {
-                document.exitFullscreen();
-              } else {
-                document.documentElement.requestFullscreen();
-              }
-            }}
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              strokeWidth={1.5}
-              stroke="currentColor"
-              className="w-6 h-6"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75h-4.5m4.5 0v4.5m0-4.5L15 9m5.25 11.25h-4.5m4.5 0v-4.5m0 4.5L15 15"
-              />
-            </svg>
-          </button>
         </div>
       </div>
     </>

@@ -3,6 +3,7 @@ import { Billboard, CameraControls, Text } from "@react-three/drei";
 import { useFrame, useThree } from "@react-three/fiber";
 import { CapsuleCollider, RigidBody, vec3 } from "@react-three/rapier";
 import { myPlayer } from "playroomkit";
+import { useSelector } from "react-redux";
 import { CharacterSoldier } from "./CharacterSoldier";
 
 const MOVEMENT_SPEED = 202;
@@ -59,8 +60,12 @@ export const CharacterController = ({
   downgradedPerformance,
   ...props
 }) => {
-  const [weapon, setWeapon] = useState("AK");
-  const [weaponIndex, setWeaponIndex] = useState(1);
+  const selectedMode = useSelector((state) => state.authslice.selectedMode);
+
+  // Knife Fight Mode: Lock to Knife
+  const isKnifeFight = selectedMode === "Knife Fight";
+  const [weapon, setWeapon] = useState(isKnifeFight ? "Knife_1" : "AK");
+  const [weaponIndex, setWeaponIndex] = useState(isKnifeFight ? 2 : 1); // Knife_1 is at index 2
   const group = useRef();
   const character = useRef();
   const rigidbody = useRef();
@@ -142,8 +147,10 @@ export const CharacterController = ({
           setMovement((prev) => ({ ...prev, jump: true }));
           break;
         case "KeyQ":
-          console.log("press q working...!")
-          setWeaponIndex((prev) => (prev + 1) % WEAPONS.length);
+          if (!isKnifeFight) {
+            console.log("press q working...!");
+            setWeaponIndex((prev) => (prev + 1) % WEAPONS.length);
+          }
           break;
         default:
           break;
@@ -199,8 +206,10 @@ export const CharacterController = ({
   useFrame((_, delta) => {
     // CAMERA FOLLOW
     if (controls.current) {
-      const cameraDistanceY = window.innerWidth < 1024 ? 16 : 20;
-      const cameraDistanceZ = window.innerWidth < 1024 ? 12 : 16;
+      const isTPP = selectedMode === "TPP";
+      const cameraDistanceY = isTPP ? 4 : (window.innerWidth < 1024 ? 16 : 20);
+      const cameraDistanceZ = isTPP ? 8 : (window.innerWidth < 1024 ? 12 : 16);
+
       const playerWorldPos = vec3(rigidbody.current.translation());
       controls.current.setLookAt(
         playerWorldPos.x,
@@ -257,7 +266,7 @@ export const CharacterController = ({
 
     const playerWorldPos = vec3(rigidbody.current.translation());
 
-    if (joystick.isPressed("switch")) {
+    if (joystick.isPressed("switch") && !isKnifeFight) {
       if (!switchTimeout) {
         switchTimeout = setTimeout(() => {
           setWeaponIndex((prev) => (prev + 1) % WEAPONS.length);

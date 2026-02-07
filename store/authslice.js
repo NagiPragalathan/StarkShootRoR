@@ -6,10 +6,11 @@ const authslice = createSlice({
     playerdata: null,
     players: [],
     selectedTime: 60,
+    selectedMode: "Free Style",
     playername: null,
     id: null,
     vediostate: false,
-    address:""
+    address: ""
   },
   reducers: {
     setPlayerData: (state, action) => {
@@ -38,6 +39,9 @@ const authslice = createSlice({
     setAddress: (state, action) => {
       state.address = action.payload;
     },
+    setMode: (state, action) => {
+      state.selectedMode = action.payload;
+    },
   },
 });
 
@@ -48,6 +52,7 @@ export const {
   setPlayers,
   setPlayerData,
   setVediostate,
-  setAddress
+  setAddress,
+  setMode
 } = authslice.actions;
 export default authslice.reducer;

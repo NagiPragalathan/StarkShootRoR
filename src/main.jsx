@@ -42,36 +42,36 @@ ReactDOM.createRoot(document.getElementById("root")).render(
         <PersistGate loading={null} persistor={persistor}>
           <HuddleProvider key="huddle01-provider" client={huddleClient}>
             <Router>
-         
-                  <Routes>
-                    <Route path="/" exact element={<Home />} />
-                    <Route path="/lobby" exact element={<Lobby />} />
-                    <Route path="/game" exact element={<App />} />
-                    <Route path="/result" exact element={<Result />} />
-                    <Route
-                      path="/Character"
-                      exact
-                      element={<SlideApp data={"1"} />}
-                    />
-                    <Route
-                      path="/guns"
-                      exact
-                      element={<GunSelectionScreen />}
-                    />
-                    <Route
-                      path="/characters"
-                      exact
-                      element={<CharacterSelectionScreen />}
-                    />
-                    <Route
-                      path="/Car"
-                      exact
-                      element={<SlideApp data={"3"} />}
-                    />
-                    <Route path="/options" exact element={<Options />} />
-                    <Route path="/optstore" exact element={<StoreOptions />} />
-                  </Routes>
-     
+
+              <Routes>
+                <Route path="/" exact element={<Lobby />} />
+                <Route path="/lobby" exact element={<Lobby />} />
+                <Route path="/game" exact element={<App />} />
+                <Route path="/result" exact element={<Result />} />
+                <Route
+                  path="/Character"
+                  exact
+                  element={<SlideApp data={"1"} />}
+                />
+                <Route
+                  path="/guns"
+                  exact
+                  element={<GunSelectionScreen />}
+                />
+                <Route
+                  path="/characters"
+                  exact
+                  element={<CharacterSelectionScreen />}
+                />
+                <Route
+                  path="/Car"
+                  exact
+                  element={<SlideApp data={"3"} />}
+                />
+                <Route path="/options" exact element={<Options />} />
+                <Route path="/optstore" exact element={<StoreOptions />} />
+              </Routes>
+
             </Router>
           </HuddleProvider>
         </PersistGate>
