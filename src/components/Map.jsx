@@ -11,15 +11,22 @@ export const Map = () => {
     console.log("selectedMap", selectedMap)
 
     // Set the map file based on the selected map
-    if (selectedMap === "Bermuda") {
-      setMapFile("models/map3.glb"); // Bermuda map
-      console.log("models/map3.glb is loaded !")
-    } else if (selectedMap === "Pochinki") {
-      setMapFile("models/map.glb"); // Pochinki map
-      console.log("models/map.glb is loaded !")
+    const mapName = selectedMap ? selectedMap.toLowerCase() : "";
+
+    if (mapName === "bermuda" || mapName === "pochinki" || mapName === "free arena") {
+      setMapFile("models/map.glb");
+    } else if (mapName === "knife fight map") {
+      setMapFile("models/knife_fight_map.glb");
+    } else if (mapName === "city side map") {
+      setMapFile("models/city_side_map.glb");
+    } else if (mapName === "living room") {
+      setMapFile("models/living_room.glb");
+    } else if (mapName === "grave house map") {
+      setMapFile("models/grave_house_map.glb");
+    } else if (mapName === "broken house map") {
+      setMapFile("models/broken_house_map.glb");
     } else {
-      setMapFile("models/map.glb"); // Default to Pochinki if no map is selected
-      console.log("models/map3.glb is loaded ! in else statements :)")
+      setMapFile("models/map.glb"); // Default fallback
     }
   }, []); // Run only once on component mount
 
@@ -47,6 +54,10 @@ export const Map = () => {
   ) : null; // Render nothing while the mapFile is being determined
 };
 
-// Preload both map files
-useGLTF.preload("models/map3.glb");
+// Preload map files
 useGLTF.preload("models/map.glb");
+useGLTF.preload("models/knife_fight_map.glb");
+useGLTF.preload("models/city_side_map.glb");
+useGLTF.preload("models/living_room.glb");
+useGLTF.preload("models/grave_house_map.glb");
+useGLTF.preload("models/broken_house_map.glb");

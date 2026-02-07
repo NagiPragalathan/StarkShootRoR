@@ -24,6 +24,8 @@ export const Experience = ({ downgradedPerformance = false }) => {
   const [characterPosition, setCharacterPosition] = useState(null); // State for character position
   const lastPositionRef = useRef(null); // Store the last known position
   const time = useSelector((state) => state.authslice.selectedTime);
+  const showMobileControls = useSelector((state) => state.authslice.showMobileControls);
+  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
   const [gameStarted, setGameStarted] = useMultiplayerState("gameStarted", false);
   const [timer, setTimer] = useMultiplayerState("timer");
@@ -44,14 +46,20 @@ export const Experience = ({ downgradedPerformance = false }) => {
 
     // Create a joystick controller for each joining player
     onPlayerJoin((state) => {
-      const joystick = new Joystick(state, {
-        type: "angular",
-        buttons: [
-          { id: "fire", label: "Fire" },
-          { id: "jump", label: "Jump" },
-          { id: "switch", label: "Switch" },
-        ],
-      });
+      // Show joystick if mobile OR if desktop mobile option is enabled
+      const shouldShowJoystick = isMobile || showMobileControls;
+
+      let joystick = null;
+      if (shouldShowJoystick) {
+        joystick = new Joystick(state, {
+          type: "angular",
+          buttons: [
+            { id: "fire", label: "Fire" },
+            { id: "jump", label: "Jump" },
+            { id: "switch", label: "Switch" },
+          ],
+        });
+      }
       const newPlayer = { state, joystick };
       state.setState("health", 100);
       state.setState("deaths", 0);

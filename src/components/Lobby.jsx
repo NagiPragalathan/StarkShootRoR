@@ -3,7 +3,7 @@ import { OrbitControls, ContactShadows } from "@react-three/drei";
 import { Canvas, useLoader } from "@react-three/fiber";
 import { Link } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { setTimer, setMode } from "../../store/authslice";
+import { setTimer, setMode, setSoundEnabled, setShowMobileControls } from "../../store/authslice";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { DotLoader } from "react-spinners";
@@ -74,7 +74,7 @@ const itemsData = {
 
 const Lobby = () => {
   const dispatch = useDispatch();
-  const playerinfo = useSelector((state) => state.authslice.playerdata);
+  const playerinfo = useSelector((state) => state?.authslice?.playerdata);
   const [balances, setBalances] = useState([]);
   const [loading, setLoading] = useState(true);
   const [mapIndex, setMapIndex] = useState(0);
@@ -83,6 +83,9 @@ const Lobby = () => {
   const [username, setUsername] = useState("");
   const [isRegistering, setIsRegistering] = useState(false);
   const [activeButton, setActiveButton] = useState(2); // Default to 5 mins
+  const soundEnabled = useSelector((state) => state?.authslice?.soundEnabled ?? true);
+  const showMobileControls = useSelector((state) => state?.authslice?.showMobileControls ?? false);
+  const [settingsModal, setSettingsModal] = useState(false);
   const [customTimeModal, setCustomTimeModal] = useState(false);
   const [customMinutes, setCustomMinutes] = useState("");
   const videoRef = useRef(null);
@@ -110,7 +113,7 @@ const Lobby = () => {
 
     window.addEventListener('click', handleInteraction);
     return () => window.removeEventListener('click', handleInteraction);
-  }, []);
+  }, [soundEnabled]); // Re-run if soundEnabled changes
 
   const [ownedItems, setOwnedItems] = useState([]);
 
@@ -137,7 +140,7 @@ const Lobby = () => {
     // Auto-select 5 mins (300s) if no time is stored
     const storedTime = localStorage.getItem("selectedTime");
     if (!storedTime) {
-      dispatch(setTimer(300));
+      if (dispatch) dispatch(setTimer(300));
       localStorage.setItem("selectedTime", "300");
       setActiveButton(2);
     } else {
@@ -167,23 +170,27 @@ const Lobby = () => {
   };
 
   const leftClick = () => {
-    startTransition(() => {
+    const update = () => {
       setMapIndex((prevIndex) => {
         const newIndex = prevIndex === 0 ? mapPaths.length - 1 : prevIndex - 1;
         localStorage.setItem("selectedMap", mapNames[newIndex]);
         return newIndex;
       });
-    });
+    };
+    if (React.startTransition) React.startTransition(update);
+    else update();
   };
 
   const rightClick = () => {
-    startTransition(() => {
+    const update = () => {
       setMapIndex((prevIndex) => {
         const newIndex = prevIndex === mapPaths.length - 1 ? 0 : prevIndex + 1;
         localStorage.setItem("selectedMap", mapNames[newIndex]);
         return newIndex;
       });
-    });
+    };
+    if (React.startTransition) React.startTransition(update);
+    else update();
   };
 
   const setGameTime = (time, buttonId) => {
@@ -191,11 +198,13 @@ const Lobby = () => {
       setCustomTimeModal(true);
       return;
     }
-    startTransition(() => {
+    const update = () => {
       dispatch(setTimer(time));
       setActiveButton(buttonId);
       localStorage.setItem("selectedTime", time);
-    });
+    };
+    if (React.startTransition) React.startTransition(update);
+    else update();
   };
 
   const handleCustomTimeSubmit = (e) => {
@@ -206,24 +215,28 @@ const Lobby = () => {
       return;
     }
     const secs = mins * 60;
-    startTransition(() => {
+    const update = () => {
       dispatch(setTimer(secs));
       setActiveButton(4);
       localStorage.setItem("selectedTime", secs.toString());
       setCustomTimeModal(false);
       toast.success(`TEMPORAL WINDOW SET: ${mins} MINUTES`);
-    });
+    };
+    if (React.startTransition) React.startTransition(update);
+    else update();
   };
 
-  const activeMode = useSelector((state) => state.authslice.selectedMode);
+  const activeMode = useSelector((state) => state?.authslice?.selectedMode);
   const [gameMode, setGameMode] = useState(activeMode || "Free Style");
   const modes = ["Free Style", "Knife Fight", "TPP"];
 
   const handleModeChange = (mode) => {
-    startTransition(() => {
+    const update = () => {
       setGameMode(mode);
       dispatch(setMode(mode));
-    });
+    };
+    if (React.startTransition) React.startTransition(update);
+    else update();
   };
 
   return (
@@ -234,6 +247,7 @@ const Lobby = () => {
         autoPlay
         loop
         playsInline
+        muted={!soundEnabled}
         className="absolute inset-0 w-full h-full object-cover"
         src="/I_need_looping_202602072235_b73bi.mp4"
       ></video>
@@ -327,6 +341,24 @@ const Lobby = () => {
               <div className="text-[10px] font-black text-white/20 uppercase tracking-tighter">Stellar Credits</div>
               <p className="font-black text-cyan text-xl tabular-nums">{credits.toLocaleString()}</p>
             </div>
+            {/* Settings Terminal Access */}
+            <button
+              onClick={() => setSettingsModal(true)}
+              className="relative p-3 bg-black/40 hover:bg-lime/20 border border-white/10 hover:border-lime/50 transition-all group pointer-events-auto overflow-hidden"
+              style={{ clipPath: 'polygon(0 0, 100% 0, 100% 70%, 80% 100%, 0 100%)' }}
+            >
+              <div className="absolute inset-0 bg-gradient-to-br from-lime/0 to-lime/5 group-hover:to-lime/10 transition-all"></div>
+              <svg
+                className="w-5 h-5 text-white/60 group-hover:text-lime transition-all duration-500 group-hover:rotate-90 relative z-10"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37a1.724 1.724 0 002.572-1.065z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+              <div className="absolute -left-full group-hover:left-full bottom-0 w-full h-[1px] bg-lime transition-all duration-700 opacity-50"></div>
+            </button>
           </div>
         </div>
 
@@ -527,10 +559,11 @@ const Lobby = () => {
         </div>
       </div>
 
-      {/* Custom Time Modal */}
+      {/* Advanced Temporal Authorization Modal - Glass Edition */}
       {customTimeModal && (
-        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm p-6">
-          <style jsx>{`
+        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/40 backdrop-blur-sm p-6 animate-in fade-in zoom-in duration-300">
+          <style dangerouslySetInnerHTML={{
+            __html: `
             input::-webkit-outer-spin-button,
             input::-webkit-inner-spin-button {
               -webkit-appearance: none;
@@ -539,50 +572,173 @@ const Lobby = () => {
             input[type=number] {
               -moz-appearance: textfield;
             }
-          `}</style>
-          <div className="bg-[#10141d] border border-white/20 p-8 w-[400px] relative shadow-[0_0_50px_rgba(0,0,0,0.8)]" style={{ clipPath: 'polygon(0 10, 10 0, 100% 0, 100% 90%, 90% 100%, 0 100%)' }}>
-            <div className="absolute top-0 right-0 w-32 h-32 bg-lime opacity-[0.05] blur-3xl pointer-events-none"></div>
+          `}} />
 
-            <div className="space-y-6 relative z-10">
+          <div className="bg-white/[0.03] backdrop-blur-2xl border border-white/20 w-[450px] relative shadow-[0_0_100px_rgba(0,0,0,0.5)] overflow-hidden"
+            style={{ clipPath: 'polygon(0 40px, 40px 0, 100% 0, 100% calc(100% - 40px), calc(100% - 40px) 100%, 0 100%)' }}>
+
+            <div className="p-10 space-y-8 relative z-10">
               <div className="flex items-center space-x-3">
-                <div className="h-4 w-1 bg-lime shadow-[0_0_10px_#A3FF12]"></div>
-                <h3 className="text-sm font-black text-lime tracking-[0.3em] uppercase">Temporal Authorization</h3>
+                <div className="h-4 w-1 bg-lime shadow-[0_0_15px_#A3FF12]"></div>
+                <h3 className="text-sm font-black text-lime tracking-[0.4em] uppercase font-orbitron">Temporal Config</h3>
               </div>
 
-              <div className="space-y-2">
-                <p className="text-2xl font-black text-white italic uppercase tracking-tighter">Enter Match Time</p>
-                <p className="text-[10px] text-white/40 font-bold tracking-widest leading-relaxed">SPECIFY OPERATIONAL WINDOW IN MINUTES FOR THIS MISSION PROTOCOL.</p>
+              <div className="space-y-3">
+                <p className="text-3xl font-black text-white italic uppercase tracking-tighter shadow-white">Match Duration</p>
+                <div className="flex items-center space-x-2">
+                  <span className="text-[9px] text-white/60 font-black tracking-widest uppercase">System Readiness:</span>
+                  <span className="text-[9px] text-lime font-black tracking-widest uppercase animate-pulse">Optimal</span>
+                </div>
               </div>
 
-              <form onSubmit={handleCustomTimeSubmit} className="space-y-6">
-                <div className="relative group overflow-hidden">
-                  <input
-                    type="number"
-                    value={customMinutes}
-                    onChange={(e) => setCustomMinutes(e.target.value)}
-                    placeholder="00"
-                    className="w-full bg-white/5 border border-white/10 p-5 text-5xl font-black text-lime italic placeholder:opacity-10 focus:border-lime/50 focus:bg-white/10 focus:outline-none transition-all"
-                    autoFocus
-                  />
-                  <span className="absolute right-5 bottom-5 text-[10px] font-black text-white/30 uppercase tracking-widest">MINS</span>
+              <form onSubmit={handleCustomTimeSubmit} className="space-y-8">
+                <div className="relative group">
+                  {/* Glowing Input Box */}
+                  <div className="absolute -inset-1 bg-gradient-to-r from-white/10 to-transparent opacity-0 group-focus-within:opacity-100 blur transition-all duration-500"></div>
+                  <div className="relative bg-white/[0.05] border border-white/20 group-focus-within:border-white/50 transition-all duration-500 overflow-hidden">
+                    <input
+                      type="number"
+                      value={customMinutes}
+                      onChange={(e) => setCustomMinutes(e.target.value)}
+                      placeholder="00"
+                      className="w-full bg-transparent p-6 text-6xl font-black text-white italic placeholder:opacity-5 focus:outline-none transition-all font-orbitron tabular-nums"
+                      autoFocus
+                    />
+                    <div className="absolute right-6 bottom-6 flex flex-col items-end">
+                      <span className="text-[10px] font-black text-white/60 uppercase tracking-[0.3em]">Minutes</span>
+                      <div className="w-12 h-[1px] bg-white/40 mt-1"></div>
+                    </div>
+                  </div>
                 </div>
 
-                <div className="flex space-x-4 pt-2">
+                <div className="flex space-x-4 pt-4">
                   <button
                     type="button"
                     onClick={() => setCustomTimeModal(false)}
-                    className="flex-1 py-4 text-[10px] font-black tracking-[0.3em] uppercase border border-white/10 text-white/50 hover:bg-white/5 hover:text-white transition-all"
+                    className="flex-1 py-4 text-[10px] font-black tracking-[0.4em] uppercase border border-white/30 text-white/50 hover:bg-white/10 hover:text-white transition-all skew-x-[-12deg]"
                   >
                     Abort
                   </button>
                   <button
                     type="submit"
-                    className="flex-1 py-4 text-[12px] font-black tracking-[0.3em] uppercase bg-[#A3FF12] text-black hover:bg-white hover:scale-[1.05] active:scale-[0.95] transition-all shadow-[0_0_30px_rgba(163,255,18,0.4)]"
+                    className="flex-[2] py-4 text-[12px] font-black tracking-[0.4em] uppercase bg-white text-black hover:bg-lime hover:scale-[1.02] active:scale-[0.98] transition-all shadow-[0_0_40px_rgba(255,255,255,0.2)] skew-x-[-12deg]"
                   >
-                    AUTHORIZE Match
+                    Authorize
                   </button>
                 </div>
               </form>
+            </div>
+
+            {/* Corner Deco */}
+            <div className="absolute top-0 right-0 w-16 h-16 bg-white/10 blur-2xl opacity-10"></div>
+            <div className="absolute top-4 right-4 w-2 h-2 border-t-2 border-r-2 border-white/40"></div>
+            <div className="absolute bottom-4 left-4 w-2 h-2 border-b-2 border-l-2 border-white/40"></div>
+          </div>
+        </div>
+      )}
+      {/* Advanced Settings Modal - Glass Edition */}
+      {settingsModal && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/40 backdrop-blur-sm p-6 animate-in fade-in zoom-in duration-300">
+          <div className="bg-white/[0.03] backdrop-blur-2xl border border-white/20 w-[550px] relative shadow-[0_0_100px_rgba(0,0,0,0.5)] overflow-hidden"
+            style={{ clipPath: 'polygon(0 40px, 40px 0, 100% 0, 100% calc(100% - 40px), calc(100% - 40px) 100%, 0 100%)' }}>
+
+            {/* Soft Internal Glow */}
+            <div className="absolute inset-0 pointer-events-none bg-gradient-to-br from-white/[0.05] to-transparent"></div>
+
+            {/* Header Area */}
+            <div className="p-8 bg-white/[0.05] border-b border-white/10">
+              <div className="flex justify-between items-center relative z-10">
+                <div className="flex items-center space-x-4">
+                  <div className="relative">
+                    <div className="w-10 h-10 border border-lime shadow-[0_0_15px_#A3FF12] flex items-center justify-center rotate-45">
+                      <svg className="w-5 h-5 text-lime -rotate-45" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+                      </svg>
+                    </div>
+                  </div>
+                  <div>
+                    <h2 className="text-2xl font-black text-white tracking-[0.2em] uppercase font-orbitron">Settings</h2>
+                    <p className="text-[10px] text-lime font-black tracking-widest opacity-80">STARK-OS // SYSTEM CORE v4.1</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setSettingsModal(false)}
+                  className="w-10 h-10 flex items-center justify-center border border-white/20 hover:border-white/60 hover:bg-white/10 group transition-all"
+                >
+                  <svg className="w-5 h-5 text-white/60 group-hover:text-white transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            <div className="p-10 space-y-8 relative z-10">
+              {/* Audio Controls Section */}
+              <div className="grid grid-cols-1 gap-6">
+                <div className="flex justify-between items-center group">
+                  <div className="flex flex-col">
+                    <div className="flex items-center space-x-2">
+                      <div className={`w-1 h-3 ${soundEnabled ? 'bg-lime' : 'bg-white/20'}`}></div>
+                      <span className="text-xs font-black text-white uppercase tracking-[0.2em]">Audio Protocols</span>
+                    </div>
+                    <span className="text-[10px] text-white/50 uppercase mt-1 ml-3 font-bold">Synchronize system loops and effects</span>
+                  </div>
+                  <button
+                    onClick={() => dispatch(setSoundEnabled(!soundEnabled))}
+                    className={`relative w-16 h-8 border transition-all duration-500 ${soundEnabled ? 'border-lime bg-lime/20' : 'border-white/20 bg-white/5'}`}
+                  >
+                    <div className={`absolute top-1 bottom-1 w-6 transition-all duration-300 ${soundEnabled ? 'right-1 bg-white shadow-[0_0_20px_rgba(255,255,255,0.8)]' : 'left-1 bg-white/10'}`}></div>
+                    <div className="absolute inset-x-0 top-1/2 h-[1px] bg-white/10"></div>
+                  </button>
+                </div>
+
+                {/* Mobile Interface Section */}
+                <div className="flex justify-between items-center group">
+                  <div className="flex flex-col">
+                    <div className="flex items-center space-x-2">
+                      <div className={`w-1 h-3 ${showMobileControls ? 'bg-cyan' : 'bg-white/20'}`}></div>
+                      <span className="text-xs font-black text-white uppercase tracking-[0.2em]">Interface Override</span>
+                    </div>
+                    <span className="text-[10px] text-white/50 uppercase mt-1 ml-3 font-bold">Manual authorization for on-screen controls</span>
+                  </div>
+                  <button
+                    onClick={() => dispatch(setShowMobileControls(!showMobileControls))}
+                    className={`relative w-16 h-8 border transition-all duration-500 ${showMobileControls ? 'border-cyan bg-cyan/20' : 'border-white/20 bg-white/5'}`}
+                  >
+                    <div className={`absolute top-1 bottom-1 w-6 transition-all duration-300 ${showMobileControls ? 'right-1 bg-white shadow-[0_0_20px_rgba(255,255,255,0.8)]' : 'left-1 bg-white/10'}`}></div>
+                    <div className="absolute inset-x-0 top-1/2 h-[1px] bg-white/10"></div>
+                  </button>
+                </div>
+              </div>
+
+              {/* Status Footer */}
+              <div className="pt-10 border-t border-white/10">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="flex flex-col space-y-1">
+                    <span className="text-[8px] font-black text-white/40 uppercase tracking-widest">Environment</span>
+                    <div className="flex items-center space-x-2">
+                      <div className="w-1.5 h-1.5 bg-lime rounded-full animate-pulse shadow-[0_0_10px_#A3FF12]"></div>
+                      <span className="text-[10px] font-black text-white/80 tracking-tighter uppercase">Primary Host Stable</span>
+                    </div>
+                  </div>
+                  <div className="flex flex-col space-y-1 text-right">
+                    <span className="text-[8px] font-black text-white/40 uppercase tracking-widest">Temporal Link</span>
+                    <span className="text-[10px] font-black text-cyan tracking-tighter uppercase tabular-nums">SYNCED // 0.00ms</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Bottom Actions */}
+            <div className="p-6 bg-white/[0.05] flex justify-end space-x-4">
+              <button
+                onClick={() => setSettingsModal(false)}
+                className="relative px-12 py-3 bg-white hover:bg-lime text-black font-black text-xs uppercase tracking-[0.2em] group overflow-hidden transition-colors"
+                style={{ clipPath: 'polygon(15px 0, 100% 0, 100% 100%, 0 100%, 0 15px)' }}
+              >
+                <div className="absolute inset-0 bg-black opacity-0 group-hover:opacity-10 transition-opacity"></div>
+                Apply & Exit
+              </button>
             </div>
           </div>
         </div>

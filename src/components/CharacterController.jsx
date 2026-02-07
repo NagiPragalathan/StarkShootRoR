@@ -275,8 +275,7 @@ export const CharacterController = ({
       return;
     }
 
-    // Update player position based on joystick state
-    const angle = joystick.angle();
+    // Movement Logic
     const movementAngle = () => {
       if (movement.forward && movement.right) return (3 * Math.PI) / 4;
       if (movement.forward && movement.left) return (5 * Math.PI) / 4;
@@ -299,56 +298,65 @@ export const CharacterController = ({
       character.current.rotation.y = angle;
     };
 
-    if (joystick.isJoystickPressed() && angle) {
-      setAnimation("Run");
-      applyMovement(angle);
-    } else {
-      const moveAngle = movementAngle();
-      if (moveAngle !== null) {
-        setAnimation("Run");
-        applyMovement(moveAngle);
-      } else {
-        setAnimation("Idle");
+    let finalAngle = null;
+    let isMoving = false;
+
+    // 1. Check Joystick Input
+    if (joystick && joystick.isJoystickPressed()) {
+      finalAngle = joystick.angle();
+      isMoving = true;
+    }
+    // 2. Check Keyboard Input (as fallback or primary if no joystick)
+    else {
+      const kbdAngle = movementAngle();
+      if (kbdAngle !== null) {
+        finalAngle = kbdAngle;
+        isMoving = true;
       }
+    }
+
+    // Apply movement and animation
+    if (isMoving && finalAngle !== null) {
+      setAnimation("Run");
+      applyMovement(finalAngle);
+    } else {
+      setAnimation("Idle");
     }
 
     const playerWorldPos = vec3(rigidbody.current.translation());
 
-    if (joystick.isPressed("switch") && !isKnifeFight) {
+    // Weapon Switch
+    const switchPressed = joystick ? joystick.isPressed("switch") : false;
+    if ((switchPressed || movement.switch) && !isKnifeFight) {
       if (!switchTimeout) {
         switchTimeout = setTimeout(() => {
           setWeaponIndex((prev) => (prev + 1) % WEAPONS.length);
-          switchTimeout = null; // Reset the timeout
-        }, 200); // Adjust the timeout duration as needed
+          switchTimeout = null;
+        }, 200);
       }
     }
 
-
-    if ((joystick.isPressed("jump") || movement.jump) && playerWorldPos.y < 2) {
+    // Jump Logic
+    const jumpPressed = joystick ? joystick.isPressed("jump") : false;
+    if ((jumpPressed || movement.jump) && playerWorldPos.y < 2) {
       setAnimation("Jump");
-      const impulse = {
-        x: Math.sin(angle) * MOVEMENT_SPEED * delta,
+      const angleForJump = finalAngle !== null ? finalAngle : character.current.rotation.y;
+      const jumpImpulse = {
+        x: Math.sin(angleForJump) * MOVEMENT_SPEED * delta,
         y: JUMP_FORCE,
-        z: Math.cos(angle) * MOVEMENT_SPEED * delta,
+        z: Math.cos(angleForJump) * MOVEMENT_SPEED * delta,
       };
-      rigidbody.current.applyImpulse(impulse, true);
-    } else {
-      const impulse = {
-        x: 0,
-        y: -2,
-        z: 0,
-      };
-      if (playerWorldPos.y > 0) {
-        rigidbody.current.applyImpulse(impulse, true);
-      }
+      rigidbody.current.applyImpulse(jumpImpulse, true);
+    } else if (playerWorldPos.y > 0) {
+      // Small downward force to stick to ground or fall faster
+      rigidbody.current.applyImpulse({ x: 0, y: -2, z: 0 }, true);
     }
 
-    // Check if fire button is pressed
-    if (joystick.isPressed("fire") || movement.fire) {
-      // fire
-      setAnimation(
-        joystick.isJoystickPressed() && angle ? "Run_Shoot" : "Idle_Shoot"
-      );
+    // Fire Logic
+    const firePressed = joystick ? joystick.isPressed("fire") : false;
+    if (firePressed || movement.fire) {
+      setAnimation(isMoving ? "Run_Shoot" : "Idle_Shoot");
+
       if (Date.now() - lastShoot.current > FIRE_RATE) {
         lastShoot.current = Date.now();
         const bulletProps = BULLET_PROPERTIES[weapon] || {};
@@ -356,7 +364,7 @@ export const CharacterController = ({
 
         for (let i = 0; i < bullets; i++) {
           const newBullet = {
-            id: state.id + "-" + +new Date(),
+            id: state.id + "-" + Date.now() + "-" + i,
             position: vec3(rigidbody.current.translation()),
             angle: character.current.rotation.y + (spread ? (Math.random() - 0.5) * spread : 0),
             player: state.id,
@@ -370,30 +378,22 @@ export const CharacterController = ({
       }
     }
 
-    // Sync animation state across the network
+    // Sync State
     if (userPlayer) {
       state.setState("pos", rigidbody.current.translation());
       state.setState("rotY", character.current.rotation.y);
       state.setState("animation", animation);
-      state.setState("weapon", weapon);  // Sync the weapon state
+      state.setState("weapon", weapon);
     } else {
       const pos = state.getState("pos");
       const rotY = state.getState("rotY");
-      const networkAnimation = state.getState("animation");
-      const networkWeapon = state.getState("weapon");  // Get the weapon state
+      const netAnim = state.getState("animation");
+      const netWeapon = state.getState("weapon");
 
-      if (pos) {
-        rigidbody.current.setTranslation(pos);
-      }
-      if (rotY !== undefined) {
-        character.current.rotation.y = rotY;
-      }
-      if (networkAnimation !== undefined) {
-        setAnimation(networkAnimation);
-      }
-      if (networkWeapon !== undefined) {
-        setWeapon(networkWeapon);
-      }
+      if (pos) rigidbody.current.setTranslation(pos);
+      if (rotY !== undefined) character.current.rotation.y = rotY;
+      if (netAnim !== undefined) setAnimation(netAnim);
+      if (netWeapon !== undefined) setWeapon(netWeapon);
     }
   });
 

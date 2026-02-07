@@ -10,7 +10,9 @@ const authslice = createSlice({
     playername: null,
     id: null,
     vediostate: false,
-    address: ""
+    address: "",
+    soundEnabled: true,
+    showMobileControls: false,
   },
   reducers: {
     setPlayerData: (state, action) => {
@@ -42,6 +44,12 @@ const authslice = createSlice({
     setMode: (state, action) => {
       state.selectedMode = action.payload;
     },
+    setSoundEnabled: (state, action) => {
+      state.soundEnabled = action.payload;
+    },
+    setShowMobileControls: (state, action) => {
+      state.showMobileControls = action.payload;
+    },
   },
 });
 
@@ -53,6 +61,8 @@ export const {
   setPlayerData,
   setVediostate,
   setAddress,
-  setMode
+  setMode,
+  setSoundEnabled,
+  setShowMobileControls
 } = authslice.actions;
 export default authslice.reducer;

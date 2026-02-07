@@ -274,27 +274,33 @@ body {
 
 /* Mode Selection Pills */
 .mode-card {
-  background: rgba(255, 255, 255, 0.03);
+  background: rgba(255, 255, 255, 0.02);
   border: 1px solid rgba(255, 255, 255, 0.05);
-  color: rgba(255, 255, 255, 0.4);
-  font-family: 'Rajdhani', sans-serif;
-  font-weight: 700;
-  font-size: 12px;
-  letter-spacing: 1px;
-  transition: all 0.3s ease;
-  clip-path: polygon(10px 0, 100% 0, calc(100% - 10px) 100%, 0 100%);
+  color: rgba(255, 255, 255, 0.3);
+  font-family: 'Orbitron', sans-serif;
+  font-weight: 800;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  transition: all 0.4s cubic-bezier(0.19, 1, 0.22, 1);
+  clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
+  position: relative;
+  overflow: hidden;
 }
 
 .mode-card:hover {
-  background: rgba(255, 255, 255, 0.1);
-  color: #fff;
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.15);
+  color: rgba(255, 255, 255, 0.8);
+  transform: translateY(-1px);
 }
 
 .mode-active {
-  background: rgba(0, 229, 255, 0.15);
-  border-color: var(--secondary-glow);
-  color: var(--secondary-glow);
-  box-shadow: inset 0 0 15px rgba(0, 229, 255, 0.1);
+  background: rgba(0, 229, 255, 0.1) !important;
+  border: 1px solid var(--secondary-glow) !important;
+  color: var(--secondary-glow) !important;
+  text-shadow: 0 0 10px rgba(0, 229, 255, 0.5);
+  box-shadow: 0 0 20px rgba(0, 229, 255, 0.15);
 }
 
 .mode-active::before {
@@ -317,16 +323,26 @@ body {
 }
 
 .time-btn {
-  background: transparent;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.3);
+  font-family: 'Orbitron', sans-serif;
+  font-weight: 900;
+  font-size: 9px;
+  transition: all 0.3s ease;
   border-bottom: 2px solid rgba(255, 255, 255, 0.1);
-  color: rgba(255, 255, 255, 0.4);
-  font-family: 'Rajdhani';
-  font-weight: 700;
+}
+
+.time-btn:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.6);
 }
 
 .time-btn-active {
-  color: var(--primary-glow);
-  border-color: var(--primary-glow);
+  color: var(--primary-glow) !important;
+  border-bottom: 2px solid var(--primary-glow) !important;
+  background: linear-gradient(to top, rgba(163, 255, 18, 0.05), transparent) !important;
+  text-shadow: 0 0 10px rgba(163, 255, 18, 0.4);
 }
 
 @keyframes breathe {
