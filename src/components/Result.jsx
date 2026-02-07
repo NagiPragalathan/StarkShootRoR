@@ -1,253 +1,150 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import "../styles/result.css";
 import { useSelector } from "react-redux";
-import Link from "next/link";
+import { Link, useNavigate } from "react-router-dom";
 import confetti from "canvas-confetti";
 
 const Result = () => {
-  const [team, setTeam] = useState([]);
-
-  const playername = "macha";
+  const navigate = useNavigate();
   const playerValue = useSelector((state) => state.authslice.playerdata);
-  const players = useSelector((state) => state.authslice.players);
-  const gameid = useSelector((state) => state.authslice.id);
-
   const [claimable, setClaimable] = useState(false);
   const [tokensAwarded, setTokensAwarded] = useState(0);
-  const [mvp, setMVP] = useState(null);
 
-  useEffect(() => {
-    const sortedTeam = playerValue
+  // Process team data using useMemo for performance
+  const team = useMemo(() => {
+    if (!playerValue || !Array.isArray(playerValue)) return [];
+
+    return [...playerValue]
       .map((value, index) => ({
-        rank: index + 1,
-        name: value.state.profile.name,
-        handle: value.state.profile.name,
-        img: value.state.profile.photo,
-        kudos: value.state.kills,
-        deaths: value.state.deaths,
-        wallet: value.state.profile.wallet,
+        id: value.id || index,
+        name: value.state?.profile?.name || "Unknown Soldier",
+        img: value.state?.profile?.photo || "https://api.dicebear.com/7.x/avataaars/svg?seed=fallback",
+        kills: value.state?.kills || 0,
+        deaths: value.state?.deaths || 0,
+        wallet: value.state?.profile?.wallet || "No Wallet",
+        color: value.state?.profile?.color || "#9fc610"
       }))
-      .sort((a, b) => b.kudos - a.kudos);
-
-    setTeam(sortedTeam);
-
-    if (sortedTeam.length > 0) {
-      const topPlayer = sortedTeam[0];
-      setMVP(topPlayer);
-      setTokensAwarded(topPlayer.kudos * 5);
-    }
+      .sort((a, b) => b.kills - a.kills)
+      .map((p, i) => ({ ...p, rank: i + 1 }));
   }, [playerValue]);
 
-  const handleClaim = async () => {
-    try {
-      setClaimable(false);
-      window.location.href = "/lobby";
-    } catch (error) {
-      console.error("Failed to claim tokens", error);
-    }
-  };
+  const mvp = team[0] || null;
 
   useEffect(() => {
-    const kills = playerValue.reduce(
-      (total, player) => total + player.state.kills,
-      0
-    );
-    if (kills > 0) {
-      setTokensAwarded(kills * 5);
-      setClaimable(true);
-    }
-
-    const randomEmoji = () => {
-      const emojis = ["👏", "👍", "🙌", "🤩", "🔥", "⭐️", "🏆", "💯"];
-      return emojis[Math.floor(Math.random() * emojis.length)];
-    };
-
-    const class_obj = document.getElementById("list");
-    while (class_obj.firstChild) {
-      class_obj.removeChild(class_obj.firstChild);
-    }
-
-    let newRow = document.createElement("li");
-    newRow.classList = "c-list__item";
-    newRow.innerHTML = `
-      <div className="c-list__grid" style="display: contents;">
-          <div className="u-text--left u-text--small u-text--medium">
-          Rank
-          </div>
-          <div className="u-text--left u-text--small u-text--medium">
-          Name
-          </div>
-          <div className="u-text--right u-text--small u-text--medium">
-          # Kills/Deaths
-          </div>
-      </div>`;
-    class_obj.appendChild(newRow);
-
-    team.forEach((member) => {
-      let newRow = document.createElement("li");
-      newRow.classList = "c-list__item";
-      newRow.innerHTML = `
-        <div class="c-list__grid" style="display: contents;">
-            <div class="c-flag c-place u-bg--transparent">${member.rank}</div>
-            <div class="c-media">
-                <img class="c-avatar c-media__img" src="${member.img}" />
-                <div class="c-media__content">
-                    <div class="c-media__title">${member.name}</div>
-                </div>
-            </div>
-            <div class="u-text--right c-kudos">
-                <div class="u-mt--8">
-                    <strong>${member.kudos}</strong>/<strong>${
-        member.deaths
-      }</strong> ${randomEmoji()}
-                </div>
-            </div>
-        </div>
-      `;
-      if (member.rank === 1) {
-        newRow.querySelector(".c-place").classList.add("u-text--dark");
-        newRow.querySelector(".c-place").classList.add("u-bg--yellow");
-        newRow.querySelector(".c-kudos").classList.add("u-text--yellow");
-      } else if (member.rank === 2) {
-        newRow.querySelector(".c-place").classList.add("u-text--dark");
-        newRow.querySelector(".c-place").classList.add("u-bg--teal");
-        newRow.querySelector(".c-kudos").classList.add("u-text--teal");
-      } else if (member.rank === 3) {
-        newRow.querySelector(".c-place").classList.add("u-text--dark");
-        newRow.querySelector(".c-place").classList.add("u-bg--orange");
-        newRow.querySelector(".c-kudos").classList.add("u-text--orange");
-      }
-      class_obj.appendChild(newRow);
-    });
-
-    const winnerCard = document.getElementById("winner");
     if (team.length > 0) {
-      const winner = team[0];
-      winnerCard.innerHTML = `
-        <div class="u-text-small u-text--medium u-mb--16">MVP of the Match🔥</div>
-        <img class="c-avatar c-avatar--lg" src="${winner.img}"/>
-        <h3 class="u-mt--16">${winner.name}</h3>
-        <span class="u-text--teal u-text--small">${winner.name}</span>
-      `;
-    }
+      // Award tokens based on performance
+      const totalKills = team.reduce((sum, p) => sum + p.kills, 0);
+      if (totalKills > 0) {
+        setTokensAwarded(totalKills * 5);
+        setClaimable(true);
+      }
 
-    confetti({
-      particleCount: 100,
-      spread: 70,
-      origin: { y: 0.6 },
-    });
+      // Play victory confetti
+      const duration = 3 * 1000;
+      const animationEnd = Date.now() + duration;
+      const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
+
+      const randomInRange = (min, max) => Math.random() * (max - min) + min;
+
+      const interval = setInterval(() => {
+        const timeLeft = animationEnd - Date.now();
+
+        if (timeLeft <= 0) {
+          return clearInterval(interval);
+        }
+
+        const particleCount = 50 * (timeLeft / duration);
+        confetti({
+          ...defaults,
+          particleCount,
+          origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 }
+        });
+        confetti({
+          ...defaults,
+          particleCount,
+          origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 }
+        });
+      }, 250);
+
+      return () => clearInterval(interval);
+    }
   }, [team]);
 
-  return (
-    <>
-      <div className="text-white min-h-screen l-wrapper">
-        <h1 className="text-center text-3xl font-bold my-4 ">Leaderboard</h1>
-        <div className="c-header">
-          {!claimable ? (
-            <button className="mapbox px-5 py-3 rounded-lg r-wrapper lobby-button">
-              <Link href="/lobby" style={{ color: "#ffffff" }}>
-                Lobby
-              </Link>
-            </button>
-          ) : (
-            <button
-              className="mapbox px-5 py-3 rounded-lg r-wrapper claim-button"
-              onClick={handleClaim}
-            >
-              Claim {tokensAwarded} Tokens
-            </button>
-          )}
-        </div>
+  const handleClaim = async () => {
+    // Here you would typically trigger an on-chain transaction
+    setClaimable(false);
+    navigate("/lobby");
+  };
 
-        <div className="l-grid">
-          <div className="l-grid__item l-grid__item--sticky">
-            <div className="c-card  glowing-card">
-              <div className="c-card__body mapbox">
-                <div className="u-text--center" id="winner" />
-              </div>
-            </div>
-          </div>
-          <div className="l-grid__item">
-            <div className="c-card glowing-card ">
-              <div className="c-card__body mapbox">
-                <ul className="c-list" id="list">
-                  <li className="c-list__item">
-                    <div className="c-list__grid">
-                      <div className="u-text--left u-text--small u-text--medium">
-                        Rank
-                      </div>
-                      <div className="u-text--left u-text--small u-text--medium">
-                        Name
-                      </div>
-                      <div className="u-text--right u-text--small u-text--medium">
-                        # Kills/Deaths
-                      </div>
-                    </div>
-                  </li>
-                </ul>
-              </div>
-            </div>
-          </div>
-        </div>
+  return (
+    <div className="result-screen">
+      <div className="result-header">
+        <h1>Mission Accomplished</h1>
+        <p style={{ color: "var(--text-muted)", letterSpacing: "2px" }}>FINAL STANDINGS</p>
       </div>
 
-      <style jsx>{`
-        .lobby-button {
-          position: fixed;
-          top: 25px;
-          right: 25px;
-        }
-        .claim-button {
-          position: fixed;
-          top: 25px;
-          right: 25px;
-          background-color: #9fc610;
-          color: #000;
-        }
-        .glowing-card {
-          position: relative;
-          border: 2px solid transparent;
-        }
-        .glowing-card::before {
-          content: "";
-          position: absolute;
-          top: -10px;
-          left: -10px;
-          right: -10px;
-          bottom: -10px;
-          background: radial-gradient(circle, #9fc610, transparent 60%);
-          border-radius: 10px;
-          animation: move-glow 3s infinite linear;
-          z-index: -1;
-        }
-        @keyframes move-glow {
-          0% {
-            transform: translateX(0) translateY(0);
-          }
-          50% {
-            transform: translateX(20px) translateY(20px);
-          }
-          100% {
-            transform: translateX(0) translateY(0);
-          }
-        }
-        .glowing-text {
-          animation: text-glow 1.5s infinite alternate;
-        }
-        @keyframes text-glow {
-          from {
-            text-shadow: 0 0 10px #9fc610, 0 0 20px #9fc610, 0 0 30px #9fc610,
-              0 0 40px #9fc610, 0 0 50px #9fc610, 0 0 60px #9fc610,
-              0 0 70px #9fc610;
-          }
-          to {
-            text-shadow: 0 0 20px #9fc610, 0 0 30px #9fc610, 0 0 40px #9fc610,
-              0 0 50px #9fc610, 0 0 60px #9fc610, 0 0 70px #9fc610,
-              0 0 80px #9fc610;
-          }
-        }
-      `}</style>
-    </>
+      {mvp && (
+        <section className="mvp-section">
+          <div className="mvp-card">
+            <div className="mvp-avatar-wrapper">
+              <span className="mvp-crown">👑</span>
+              <img src={mvp.img} alt={mvp.name} className="mvp-avatar" />
+            </div>
+            <div className="mvp-info">
+              <h2>Most Valuable Player</h2>
+              <p className="mvp-name">{mvp.name}</p>
+              <div className="mvp-stats">
+                <div className="stat-item">
+                  <span className="stat-value">{mvp.kills}</span>
+                  <span className="stat-label">Total Kills</span>
+                </div>
+                <div className="stat-item">
+                  <span className="stat-value">{mvp.deaths}</span>
+                  <span className="stat-label">Deaths</span>
+                </div>
+                <div className="stat-item">
+                  <span className="stat-value">{(mvp.kills / (mvp.deaths || 1)).toFixed(2)}</span>
+                  <span className="stat-label">K/D Ratio</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
+
+      <div className="leaderboard-container">
+        {team.map((player) => (
+          <div key={player.id} className={`player-row rank-${player.rank}`}>
+            <div className="rank-badge">
+              {player.rank === 1 ? "1st" : player.rank === 2 ? "2nd" : player.rank === 3 ? "3rd" : player.rank}
+            </div>
+            <div className="player-identity">
+              <img src={player.img} alt={player.name} className="player-avatar-mini" />
+              <span className="player-name-mini">{player.name}</span>
+            </div>
+            <div className="stat-group">
+              <span className="stat-label">Kills</span>
+              <div className="kd-val kills">{player.kills}</div>
+            </div>
+            <div className="stat-group">
+              <span className="stat-label">Deaths</span>
+              <div className="kd-val deaths">{player.deaths}</div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div className="action-bar">
+        <Link to="/lobby" className="btn-premium btn-lobby">
+          Return to Lobby
+        </Link>
+        {claimable && (
+          <button onClick={handleClaim} className="btn-premium btn-claim">
+            Claim {tokensAwarded} RO$
+          </button>
+        )}
+      </div>
+    </div>
   );
 };
 
