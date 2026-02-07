@@ -63,13 +63,13 @@ body {
 .cyber-overlay {
   position: fixed;
   inset: 0;
-  background-image:
-    linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%),
-    linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
-  background-size: 100% 3px, 3px 100%;
+  background:
+    linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.05) 50%),
+    linear-gradient(90deg, rgba(163, 255, 18, 0.02), transparent, rgba(0, 229, 255, 0.02));
+  background-size: 100% 4px, 100% 100%;
   pointer-events: none;
-  z-index: 101;
-  opacity: 0.15;
+  z-index: 100;
+  opacity: 0.3;
 }
 
 /* Home Profile ID */
@@ -157,30 +157,80 @@ body {
   left: 0;
   height: 2px;
   width: 100%;
-  background: var(--secondary-glow);
-  opacity: 0.5;
+  background: var(--primary-glow);
+  box-shadow: 0 0 10px var(--primary-glow);
 }
 
 /* Nav Cards */
 .homebox {
-  background: linear-gradient(90deg, var(--panel-bg) 0%, transparent 100%);
-  border-left: 2px solid rgba(255, 255, 255, 0.1);
-  padding: 2.5rem;
-  clip-path: polygon(0 0, 100% 0, calc(100% - 20px) 100%, 0 100%);
-  box-shadow: 20px 0 50px rgba(0, 0, 0, 0.5);
+  background: linear-gradient(135deg, rgba(0, 0, 0, 0.7) 0%, rgba(20, 20, 25, 0.4) 100%);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-left: 3px solid var(--primary-glow);
+  padding: 3rem 2.5rem;
+  clip-path: polygon(0% 0%,
+      90% 0%,
+      100% 20px,
+      100% 80%,
+      92% 100%,
+      0% 100%);
+  box-shadow:
+    0 40px 100px rgba(0, 0, 0, 0.8),
+    inset 0 0 40px rgba(163, 255, 18, 0.02);
+  position: relative;
+  overflow: hidden;
+  height: max-content;
+}
+
+.homebox::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 100px;
+  height: 2px;
+  background: var(--primary-glow);
+  opacity: 0.5;
+}
+
+.homebox::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, rgba(163, 255, 18, 0.03) 0%, transparent 40%);
+  pointer-events: none;
 }
 
 .menu-tab {
-  transition: all 0.2s ease;
-  border-bottom: 1px solid transparent;
-  opacity: 0.6;
-  padding: 10px 15px;
+  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  border-left: 4px solid transparent;
+  background: rgba(255, 255, 255, 0.01);
+  margin-bottom: 12px;
+  padding: 18px 25px;
+  position: relative;
+  clip-path: polygon(0 0, 100% 0, 95% 100%, 0 100%);
+}
+
+.menu-tab .text-white {
+  font-size: 1.4rem;
+  letter-spacing: 0.2em;
+  opacity: 0.5;
+  transition: all 0.3s ease;
 }
 
 .menu-tab:hover {
-  opacity: 1;
   background: linear-gradient(90deg, rgba(163, 255, 18, 0.1) 0%, transparent 100%);
+  border-left: 4px solid var(--primary-glow);
   transform: translateX(10px);
+}
+
+.menu-tab:hover .text-white {
+  opacity: 1;
+  color: #fff;
+  text-shadow: 0 0 15px rgba(163, 255, 18, 0.4);
 }
 
 .menu-icon {
@@ -189,11 +239,12 @@ body {
 
 /* Right Side Panel */
 .mapbox {
-  background: var(--panel-bg);
-  border: 1px solid var(--border-subtle);
-  border-right: 4px solid var(--secondary-glow);
-  box-shadow: -20px 0 60px rgba(0, 0, 0, 0.8);
-  clip-path: polygon(20px 0, 100% 0, 100% calc(100% - 20px), calc(100% - 20px) 100%, 0 100%, 0 20px);
+  background: linear-gradient(135deg, rgba(0, 0, 0, 0.7) 0%, rgba(20, 20, 25, 0.4) 100%);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-right: 3px solid var(--secondary-glow);
+  box-shadow: 0 40px 100px rgba(0, 0, 0, 0.8);
+  clip-path: polygon(10% 0, 100% 0, 100% 100%, 0 100%, 0 20px);
 }
 
 .map-preview {
@@ -203,14 +254,16 @@ body {
 }
 
 .map-preview::before {
-  content: "SYSTEM STABLE";
+  content: "LOCATION SCANNING...";
   position: absolute;
   top: 10px;
-  right: 10px;
-  font-size: 10px;
+  right: 15px;
+  font-size: 9px;
   color: var(--secondary-glow);
   z-index: 10;
   font-family: 'Rajdhani';
+  letter-spacing: 2px;
+  animation: flicker 2s infinite;
 }
 
 /* Mode Selection Pills */

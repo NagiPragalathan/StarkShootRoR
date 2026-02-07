@@ -81,7 +81,7 @@ const Lobby = () => {
   };
 
   return (
-    <div className="min-h-screen relative overflow-hidden font-sans">
+    <div className="h-screen w-screen relative overflow-hidden font-sans select-none">
       {/* Dynamic Video Background */}
       <video
         autoPlay
@@ -92,44 +92,10 @@ const Lobby = () => {
         src="/I_need_looping_202602072235_b73bi.mp4"
       ></video>
 
+      {/* Overlays */}
+      <div className="cyber-overlay"></div>
 
 
-      {/* Header: Identity & Economy */}
-      <div className="relative z-20 flex justify-between items-start w-full px-12 py-8 pointer-events-none">
-        <div className="homeprofilebg flex items-center p-1 pr-8 space-x-6 pointer-events-auto">
-          <div className="relative group">
-            <img
-              src="https://blogger.googleusercontent.com/img/a/AVvXsEilxD0f-Y5qYnr3AA8xT_tvMlR7ru7Yl1zxozlEzg-C5oJqOStwAR8OxsgItoWC112TQTgCt4_xylJDmr4v_Z_A3MDUy22L6CAI_Cvw_FnicYCcoXScnCt41T-xiWNZ8JQJyfbXNdygsgY9TxXvH-Yqdg0vqpeMrakh78RxXj5BAT4XwW1a3KsQVhexzog"
-              className="h-20 w-20 profile-avatar object-cover grayscale group-hover:grayscale-0 transition-all duration-500"
-              alt="Avatar"
-            />
-            <div className="absolute -bottom-2 -right-4 rank-badge">LV 01</div>
-          </div>
-
-          <div className="flex flex-col">
-            <h1 className="text-2xl font-black text-white tracking-widest uppercase">
-              {playerData?.name || "PRASHANTEXE"}
-            </h1>
-            <div className="flex items-center space-x-4 mt-2">
-              <div className="w-40 h-1 bg-white/10 relative">
-                <div className="absolute inset-0 bg-lime shadow-[0_0_10px_#A3FF12] w-2/5"></div>
-              </div>
-              <span className="text-[10px] text-white/40 font-bold uppercase tracking-widest">XP 1240/5000</span>
-            </div>
-          </div>
-        </div>
-
-        <div className="flex space-x-6 pointer-events-auto">
-          <div className="currency-display flex items-center space-x-4">
-            <div className="text-[10px] font-black text-white/20 uppercase tracking-tighter">Gold Stock</div>
-            <p className="font-black text-[#FFD27F] text-xl tabular-nums">1,240</p>
-          </div>
-          <div className="currency-display flex items-center space-x-4 border-r-lime">
-            <div className="text-[10px] font-black text-white/20 uppercase tracking-tighter">Stellar Credits</div>
-            <p className="font-black text-cyan text-xl tabular-nums">250</p>
-          </div>
-        </div>
-      </div>
 
       {/* Background: Character Stage (Full Height) */}
       <div className="absolute inset-0 z-[5]">
@@ -142,7 +108,7 @@ const Lobby = () => {
                 <CharacterSoldier
                   animation="Idle"
                   weapon="AK"
-                  position={[-0.4, -1, 0]}
+                  position={[-0.1, -1, 0]}
                   scale={0.85}
                 />
                 <OrbitControls
@@ -152,117 +118,156 @@ const Lobby = () => {
                   maxPolarAngle={Math.PI / 2.2}
                   makeDefault
                 />
-
               </Suspense>
             </Canvas>
           </div>
         </div>
       </div>
 
-      <div className="relative z-10 flex justify-between items-end h-[calc(100vh-120px)] px-12 pb-12 pointer-events-none">
-        <div className="homebox flex flex-col space-y-10 w-80 relative pointer-events-auto">
-          <div className="space-y-4">
-            <div className="flex items-center space-x-3 mb-8">
-              <div className="h-4 w-1 bg-lime shadow-[0_0_10px_#A3FF12]"></div>
-              <div className="text-[10px] text-white/50 font-black tracking-[0.5em] uppercase">Tactical Suite</div>
+      {/* UI Overlay Layer */}
+      <div className="absolute inset-0 z-10 flex flex-col pointer-events-none overflow-hidden">
+        {/* Header: Identity & Economy */}
+        <div className="flex justify-between items-start w-full px-12 py-8">
+          <div className="homeprofilebg flex items-center p-1 pr-8 space-x-6 pointer-events-auto">
+            <div className="relative group">
+              <img
+                src="https://blogger.googleusercontent.com/img/a/AVvXsEilxD0f-Y5qYnr3AA8xT_tvMlR7ru7Yl1zxozlEzg-C5oJqOStwAR8OxsgItoWC112TQTgCt4_xylJDmr4v_Z_A3MDUy22L6CAI_Cvw_FnicYCcoXScnCt41T-xiWNZ8JQJyfbXNdygsgY9TxXvH-Yqdg0vqpeMrakh78RxXj5BAT4XwW1a3KsQVhexzog"
+                className="h-20 w-20 profile-avatar object-cover grayscale group-hover:grayscale-0 transition-all duration-500"
+                alt="Avatar"
+              />
+              <div className="absolute -bottom-2 -right-4 rank-badge">LV 01</div>
             </div>
 
-            {["BATTLE PASS", "QUARTERMASTER", "NEON ROYALE", "ARMORY"].map((item, i) => (
-              <Link
-                key={item}
-                to={item === "ARMORY" ? "/Guns" : "/optstore"}
-                className="menu-tab block group relative"
-              >
-                <div className="flex items-center justify-between">
-                  <div className="text-white font-black text-2xl tracking-widest group-hover:text-lime transition-all duration-300">
-                    {item}
-                  </div>
+            <div className="flex flex-col">
+              <h1 className="text-2xl font-black text-white tracking-widest uppercase">
+                {playerData?.name || "PRASHANTEXE"}
+              </h1>
+              <div className="flex items-center space-x-4 mt-2">
+                <div className="w-40 h-1 bg-white/10 relative">
+                  <div className="absolute inset-0 bg-lime shadow-[0_0_10px_#A3FF12] w-2/5"></div>
                 </div>
-                <div className="h-[1px] w-0 group-hover:w-64 bg-gradient-to-r from-lime/50 to-transparent transition-all duration-500"></div>
-              </Link>
-            ))}
+                <span className="text-[10px] text-white/40 font-bold uppercase tracking-widest">XP 1240/5000</span>
+              </div>
+            </div>
           </div>
 
-          <div className="pt-8 border-t border-white/5 space-y-2">
-            <div className="text-[9px] text-white/20 font-mono flex items-center space-x-2">
-              <span className="inline-block w-1 h-1 bg-lime animate-pulse"></span>
-              <span>SIGNAL: STABLE - 24MS</span>
+          <div className="flex space-x-6 pointer-events-auto">
+            <div className="currency-display flex items-center space-x-4">
+              <div className="text-[10px] font-black text-white/20 uppercase tracking-tighter">Gold Stock</div>
+              <p className="font-black text-[#FFD27F] text-xl tabular-nums">1,240</p>
             </div>
-            <div className="text-[9px] text-white/20 font-mono">CONNECTION: ENCRYPTED // REGION: STARK-01</div>
+            <div className="currency-display flex items-center space-x-4 border-r-lime">
+              <div className="text-[10px] font-black text-white/20 uppercase tracking-tighter">Stellar Credits</div>
+              <p className="font-black text-cyan text-xl tabular-nums">250</p>
+            </div>
           </div>
         </div>
 
-
-
-        {/* Right: Combat Control Panel */}
-        <div className="flex flex-col space-y-6 w-96 pointer-events-auto">
-          <div className="mapbox p-8 space-y-8">
-            {/* Map Reveal */}
+        <div className="flex-grow flex justify-between items-center px-12 pb-12">
+          {/* Left Panel: Tactical Suite */}
+          <div className="homebox flex flex-col space-y-10 w-96 relative pointer-events-auto">
             <div className="space-y-4">
-              <div className="flex justify-between items-center">
-                <span className="text-[10px] text-white/30 font-black tracking-widest">MAP SELECTION</span>
-                <span className="text-[10px] text-cyan font-bold tabular-nums">0{mapIndex + 1} / 03</span>
+              <div className="flex items-center space-x-3 mb-8">
+                <div className="h-4 w-1 bg-lime shadow-[0_0_10px_#A3FF12]"></div>
+                <div className="text-[10px] text-white/50 font-black tracking-[0.5em] uppercase">Tactical Suite</div>
               </div>
-              <div className="map-preview group relative h-44 overflow-hidden">
-                <img
-                  src={mapPaths[mapIndex]}
-                  className={`h-full w-full object-cover transition-all duration-[2s] group-hover:scale-125 ${mapIndex !== 0 ? "grayscale brightness-50" : ""}`}
-                  alt="Map"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
-                <div className="absolute bottom-4 left-6">
-                  <h2 className="text-3xl font-black text-white italic tracking-tighter uppercase">{mapNames[mapIndex]}</h2>
-                  {mapIndex !== 0 && <span className="text-[9px] text-red-500 font-bold tracking-widest">DEPLOYMENT UNAVAILABLE</span>}
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-2">
-                <button onClick={leftClick} className="nav-chevron py-3 uppercase text-[10px] font-black tracking-widest">PREVIOUS AREA</button>
-                <button onClick={rightClick} className="nav-chevron py-3 uppercase text-[10px] font-black tracking-widest">NEXT AREA</button>
-              </div>
+
+              {["BATTLE PASS", "QUARTERMASTER", "NEON ROYALE", "ARMORY"].map((item, i) => (
+                <Link
+                  key={item}
+                  to={item === "ARMORY" ? "/Guns" : "/optstore"}
+                  className="menu-tab block group relative"
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="text-white font-black text-2xl tracking-widest transition-all duration-300">
+                      {item}
+                    </div>
+                  </div>
+                </Link>
+              ))}
             </div>
 
-            {/* Mode Logic */}
-            <div className="space-y-4">
-              <span className="text-[10px] text-white/30 font-black tracking-widest uppercase">Combat Protocol</span>
-              <div className="flex flex-wrap gap-2">
-                {modes.map(mode => (
-                  <button
-                    key={mode}
-                    onClick={() => handleModeChange(mode)}
-                    className={`mode-card px-4 py-2 flex-grow text-center ${gameMode === mode ? 'mode-active' : ''}`}
-                  >
-                    {mode}
-                  </button>
-                ))}
+            <div className="pt-8 border-t border-white/5 space-y-2">
+              <div className="text-[9px] text-white/20 font-mono flex items-center space-x-2">
+                <span className="inline-block w-1 h-1 bg-lime animate-pulse"></span>
+                <span>SIGNAL: STABLE - 24MS</span>
               </div>
-            </div>
-
-            {/* Time Logic */}
-            <div className="space-y-4">
-              <span className="text-[10px] text-white/30 font-black tracking-widest uppercase">Deployment window</span>
-              <div className="flex justify-between items-center">
-                {[60, 300, 600].map((time, i) => (
-                  <button
-                    key={time}
-                    onClick={() => setGameTime(time, i + 1)}
-                    className={`time-btn px-4 py-2 text-sm ${activeButton === i + 1 ? "time-btn-active" : ""}`}
-                  >
-                    {time / 60} MINUTES
-                  </button>
-                ))}
-              </div>
+              <div className="text-[9px] text-white/20 font-mono">CONNECTION: ENCRYPTED // REGION: STARK-01</div>
             </div>
           </div>
 
-          <Link
-            className="playbtm group relative flex items-center justify-center p-6 space-x-4"
-            to="/game"
-          >
-            <span className="text-2xl font-black">START MISSION</span>
-            <svg className="w-6 h-6 transform group-hover:translate-x-2 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M13 5l7 7-7 7M5 5l7 7-7 7" />
-            </svg>
-          </Link>
+
+
+          {/* Right: Combat Control Panel */}
+          <div className="flex flex-col space-y-6 w-96 pointer-events-auto">
+            <div className="mapbox p-5 space-y-5">
+              {/* Map Reveal */}
+              <div className="space-y-3">
+                <div className="flex justify-between items-center">
+                  <span className="text-[10px] text-white/30 font-black tracking-widest">MAP SELECTION</span>
+                  <span className="text-[10px] text-cyan font-bold tabular-nums">0{mapIndex + 1} / 03</span>
+                </div>
+                <div className="map-preview group relative h-36 overflow-hidden">
+                  <img
+                    src={mapPaths[mapIndex]}
+                    className={`h-full w-full object-cover transition-all duration-[2s] group-hover:scale-125 ${mapIndex !== 0 ? "grayscale brightness-50" : ""}`}
+                    alt="Map"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
+                  <div className="absolute bottom-3 left-6">
+                    <h2 className="text-2xl font-black text-white italic tracking-tighter uppercase">{mapNames[mapIndex]}</h2>
+                    {mapIndex !== 0 && <span className="text-[9px] text-red-500 font-bold tracking-widest">DEPLOYMENT UNAVAILABLE</span>}
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <button onClick={leftClick} className="nav-chevron py-3 uppercase text-[10px] font-black tracking-widest">PREVIOUS AREA</button>
+                  <button onClick={rightClick} className="nav-chevron py-3 uppercase text-[10px] font-black tracking-widest">NEXT AREA</button>
+                </div>
+              </div>
+
+              {/* Mode Logic */}
+              <div className="space-y-3">
+                <span className="text-[10px] text-white/30 font-black tracking-widest uppercase">Combat Protocol</span>
+                <div className="flex flex-wrap gap-2">
+                  {modes.map(mode => (
+                    <button
+                      key={mode}
+                      onClick={() => handleModeChange(mode)}
+                      className={`mode-card px-3 py-2 flex-grow text-center ${gameMode === mode ? 'mode-active' : ''}`}
+                    >
+                      {mode}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Time Logic */}
+              <div className="space-y-3">
+                <span className="text-[10px] text-white/30 font-black tracking-widest uppercase">Deployment window</span>
+                <div className="flex justify-between items-center px-1">
+                  {[60, 300, 600].map((time, i) => (
+                    <button
+                      key={time}
+                      onClick={() => setGameTime(time, i + 1)}
+                      className={`time-btn px-4 py-2 text-xs ${activeButton === i + 1 ? "time-btn-active" : ""}`}
+                    >
+                      {time / 60} MIN
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <Link
+              className="playbtm group relative flex items-center justify-center p-6 space-x-4"
+              to="/game"
+            >
+              <span className="text-2xl font-black">START MISSION</span>
+              <svg className="w-6 h-6 transform group-hover:translate-x-2 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M13 5l7 7-7 7M5 5l7 7-7 7" />
+              </svg>
+            </Link>
+          </div>
         </div>
       </div>
 
